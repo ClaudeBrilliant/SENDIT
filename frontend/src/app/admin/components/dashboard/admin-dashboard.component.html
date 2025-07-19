@@ -1,0 +1,379 @@
+<div class="admin-dashboard">
+    <!-- Navigation Header -->
+    <nav class="navbar">
+      <div class="navbar-content">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <h1 class="logo-title">SendIT <span class="accent">Admin</span></h1>
+        </div>
+        
+        <div class="search-container">
+          <input type="text" 
+                 class="search-input" 
+                 placeholder="Search parcels, users..."
+                 [(ngModel)]="searchQuery"
+                 (input)="onSearch($event)">
+          <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        
+        <div class="navbar-actions">
+          <button class="notification-btn" [class.has-notifications]="hasNotifications">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M15 17h5l-5 5v-5zM9 7a3 3 0 016 0v4l2 2v1H7v-1l2-2V7z" />
+            </svg>
+          </button>
+          <div class="profile-section">
+            <div class="profile-img" [style.background-image]="'url(' + userProfileImage + ')'" ></div>
+            <span class="profile-name">{{ currentUser.name }}</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+  
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <button class="sidebar-toggle" (click)="toggleSidebar()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      
+      <nav class="sidebar-nav">
+        <button class="sidebar-nav-link" 
+                [class.active]="selectedTab === 'overview'" 
+                (click)="selectTab('overview')"
+                title="Dashboard">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+          </svg>
+          <span>Dashboard</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                [class.active]="selectedTab === 'parcels'" 
+                (click)="selectTab('parcels')"
+                title="Parcels">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <span>Parcels</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                [class.active]="selectedTab === 'users'" 
+                (click)="selectTab('users')"
+                title="Users">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          </svg>
+          <span>Users</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                [class.active]="selectedTab === 'analytics'" 
+                (click)="selectTab('analytics')"
+                title="Analytics">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span>Analytics</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                [class.active]="selectedTab === 'settings'" 
+                (click)="selectTab('settings')"
+                title="Settings">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button class="logout-btn sidebar-nav-link" (click)="logout()" title="Logout">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+  
+    <!-- Main Content Area -->
+    <main class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
+      
+      <!-- Dashboard Overview Tab -->
+      <div *ngIf="selectedTab === 'overview'" class="tab-content">
+        <header class="page-header">
+          <div class="page-title-section">
+            <h1 class="page-title">Dashboard Overview</h1>
+            <p class="page-subtitle">Monitor your courier operations at a glance</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-outline" (click)="refreshData()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+            <button class="btn btn-primary" (click)="exportReport()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export Report
+            </button>
+          </div>
+        </header>
+  
+        <!-- Statistics Cards -->
+        <section class="stats-section">
+          <div class="stats-grid">
+            <div class="stat-card total">
+              <div class="stat-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Total Parcels</div>
+                <div class="stat-value">{{ parcelStats.total | number }}</div>
+                <div class="stat-change positive">+12% from last month</div>
+              </div>
+            </div>
+            
+            <div class="stat-card pending">
+              <div class="stat-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value">{{ parcelStats.pending | number }}</div>
+                <div class="stat-change neutral">{{ getPendingPercentage() }}% of total</div>
+              </div>
+            </div>
+            
+            <div class="stat-card in-transit">
+              <div class="stat-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">In Transit</div>
+                <div class="stat-value">{{ parcelStats.inTransit | number }}</div>
+                <div class="stat-change positive">+5% from yesterday</div>
+              </div>
+            </div>
+            
+            <div class="stat-card delivered">
+              <div class="stat-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Delivered</div>
+                <div class="stat-value">{{ parcelStats.delivered | number }}</div>
+                <div class="stat-change positive">+8% from last week</div>
+              </div>
+            </div>
+            
+            <div class="stat-card cancelled">
+              <div class="stat-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Cancelled</div>
+                <div class="stat-value">{{ parcelStats.cancelled | number }}</div>
+                <div class="stat-change negative">-2% from last month</div>
+              </div>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Recent Activity Sections -->
+        <div class="content-grid">
+          <!-- Recent Parcels Section -->
+          <section class="content-card">
+            <header class="card-header">
+              <div class="card-title-section">
+                <h2 class="card-title">Recent Parcels</h2>
+                <span class="card-subtitle">Latest parcel activities</span>
+              </div>
+              <button class="card-action" (click)="selectTab('parcels')">
+                View All
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </header>
+            
+            <div class="card-content">
+              <div class="item-list" *ngIf="recentParcels.length > 0; else noRecentParcels">
+                <div *ngFor="let parcel of recentParcels; trackBy: trackByParcelId" 
+                     class="list-item clickable"
+                     (click)="viewParcelDetails(parcel.id)">
+                  <div class="item-avatar">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </div>
+                  <div class="item-info">
+                    <div class="item-title">{{ parcel.trackingNumber }}</div>
+                    <div class="item-subtitle">{{ parcel.senderName }} → {{ parcel.receiverName }}</div>
+                    <div class="item-meta">{{ parcel.destination }} • {{ parcel.createdAt | date:'short' }}</div>
+                  </div>
+                  <div class="item-actions">
+                    <span class="status-badge" [ngClass]="'status-badge ' + parcel.status">
+                      {{ formatStatus(parcel.status) }}
+                    </span>
+                    <div class="item-amount">KSh {{ parcel.amount | number:'1.2-2' }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <ng-template #noRecentParcels>
+                <div class="empty-state">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <h3>No recent parcels</h3>
+                  <p>Parcel activities will appear here</p>
+                </div>
+              </ng-template>
+            </div>
+          </section>
+  
+          <!-- Recent Users Section -->
+          <section class="content-card">
+            <header class="card-header">
+              <div class="card-title-section">
+                <h2 class="card-title">Recent Users</h2>
+                <span class="card-subtitle">Newly registered users</span>
+              </div>
+              <button class="card-action" (click)="selectTab('users')">
+                View All
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </header>
+            
+            <div class="card-content">
+              <div class="item-list" *ngIf="recentUsers.length > 0; else noRecentUsers">
+                <div *ngFor="let user of recentUsers; trackBy: trackByUserId" 
+                     class="list-item clickable"
+                     (click)="viewUserDetails(user.id)">
+                  <div class="item-avatar user-avatar" 
+                       [style.background-image]="'url(' + (user.profileImage || '/assets/default-avatar.png') + ')'">
+                    <span *ngIf="!user.profileImage">{{ getUserInitials(user.name) }}</span>
+                  </div>
+                  <div class="item-info">
+                    <div class="item-title">{{ user.name }}</div>
+                    <div class="item-subtitle">{{ user.email }}</div>
+                    <div class="item-meta">{{ user.parcelsCount }} parcels • Joined {{ user.createdAt | date:'mediumDate' }}</div>
+                  </div>
+                  <div class="item-actions">
+                    <span class="status-badge" [ngClass]="'status-badge ' + user.status">
+                      {{ formatStatus(user.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <ng-template #noRecentUsers>
+                <div class="empty-state">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                  <h3>No recent users</h3>
+                  <p>New user registrations will appear here</p>
+                </div>
+              </ng-template>
+            </div>
+          </section>
+        </div>
+      </div>
+  
+      <!-- Placeholder for other tabs -->
+      <div *ngIf="selectedTab === 'parcels'" class="tab-content">
+        <header class="page-header">
+          <h1 class="page-title">Parcels Management</h1>
+          <p class="page-subtitle">Manage all parcels and tracking information</p>
+        </header>
+        <!-- Parcels content will be implemented here -->
+        <div class="coming-soon">
+          <h3>Parcels management interface coming soon...</h3>
+        </div>
+      </div>
+  
+      <div *ngIf="selectedTab === 'users'" class="tab-content">
+        <header class="page-header">
+          <h1 class="page-title">Users Management</h1>
+          <p class="page-subtitle">Manage user accounts and permissions</p>
+        </header>
+        <!-- Users content will be implemented here -->
+        <div class="coming-soon">
+          <h3>Users management interface coming soon...</h3>
+        </div>
+      </div>
+  
+      <div *ngIf="selectedTab === 'analytics'" class="tab-content">
+        <header class="page-header">
+          <h1 class="page-title">Analytics & Reports</h1>
+          <p class="page-subtitle">View detailed analytics and generate reports</p>
+        </header>
+        <!-- Analytics content will be implemented here -->
+        <div class="coming-soon">
+          <h3>Analytics dashboard coming soon...</h3>
+        </div>
+      </div>
+  
+      <div *ngIf="selectedTab === 'settings'" class="tab-content">
+        <header class="page-header">
+          <h1 class="page-title">Settings</h1>
+          <p class="page-subtitle">Configure application settings and preferences</p>
+        </header>
+        <!-- Settings content will be implemented here -->
+        <div class="coming-soon">
+          <h3>Settings interface coming soon...</h3>
+        </div>
+      </div>
+  
+    </main>
+  </div>

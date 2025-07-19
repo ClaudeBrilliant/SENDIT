@@ -7,6 +7,8 @@ import { ContactComponent } from './pages/contact/contact.component';
 import { FaqsComponent } from './pages/faqs/faqs.component';
 import { ServicesComponent } from './shared/components/services/services.component';
 import { AboutComponent } from './shared/components/about/about.component';
+import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
+import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -17,5 +19,7 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   { path: 'faqs', component: FaqsComponent },
   { path: 'services', component: ServicesComponent },
-  { path: 'about', component: AboutComponent }
+  { path: 'about', component: AboutComponent },
+  { path: 'user/dashboard', component: UserDashboardComponent },
+  { path: 'admin/dashboard', component: AdminDashboardComponent}
 ];

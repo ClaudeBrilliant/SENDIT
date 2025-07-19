@@ -1,0 +1,380 @@
+<!-- User Dashboard Template -->
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="user-info">
+          <div class="user-avatar">
+            <img [src]="user.avatar" [alt]="user.firstName + ' ' + user.lastName">
+          </div>
+          <div class="user-details">
+            <h1 class="welcome-text">Welcome back, {{user.firstName}}!</h1>
+            <p class="user-email">{{user.email}}</p>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="btn btn-primary" (click)="createNewParcel()">
+            <i class="icon-plus"></i>
+            Send Parcel
+          </button>
+          <div class="user-menu">
+            <button class="btn btn-ghost" (click)="viewProfile()">
+              <i class="icon-user"></i>
+              Profile
+            </button>
+            <button class="btn btn-ghost" (click)="logout()">
+              <i class="icon-log-out"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+    <!-- Dashboard Stats -->
+    <section class="dashboard-stats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon sent">
+            <i class="icon-send"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{getDashboardStats().totalSentParcels}}</h3>
+            <p>Parcels Sent</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon received">
+            <i class="icon-inbox"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{getDashboardStats().totalReceivedParcels}}</h3>
+            <p>Parcels Received</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon pending">
+            <i class="icon-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{getPendingCount()}}</h3>
+            <p>Pending Deliveries</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon delivered">
+            <i class="icon-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{getDeliveredCount()}}</h3>
+            <p>Delivered</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Navigation Tabs -->
+    <div class="dashboard-tabs">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'sent'"
+        (click)="switchTab('sent')">
+        <i class="icon-send"></i>
+        Sent Parcels
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'received'"
+        (click)="switchTab('received')">
+        <i class="icon-inbox"></i>
+        Received Parcels
+      </button>
+    </div>
+  
+    <!-- Search and Filters -->
+    <div class="search-filters" [formGroup]="searchForm">
+      <div class="search-bar">
+        <div class="search-input-group">
+          <i class="icon-search"></i>
+          <input 
+            type="text" 
+            formControlName="searchTerm"
+            placeholder="Search by tracking number, sender, or receiver..."
+            class="search-input">
+        </div>
+      </div>
+      
+      <div class="filters-row">
+        <select formControlName="statusFilter" class="filter-select">
+          <option *ngFor="let filter of statusFilters" [value]="filter.value">
+            {{filter.label}}
+          </option>
+        </select>
+        
+        <select formControlName="weightFilter" class="filter-select">
+          <option *ngFor="let filter of weightFilters" [value]="filter.value">
+            {{filter.label}}
+          </option>
+        </select>
+        
+        <input 
+          type="date" 
+          formControlName="dateFrom"
+          class="filter-date"
+          placeholder="From Date">
+        
+        <input 
+          type="date" 
+          formControlName="dateTo"
+          class="filter-date"
+          placeholder="To Date">
+        
+        <button class="btn btn-secondary" (click)="clearFilters()">
+          <i class="icon-x"></i>
+          Clear
+        </button>
+        
+        <button class="btn btn-secondary" (click)="exportParcels()">
+          <i class="icon-download"></i>
+          Export
+        </button>
+      </div>
+    </div>
+  
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading your parcels...</p>
+    </div>
+  
+    <!-- Parcels List -->
+    <div class="parcels-section" *ngIf="!loading">
+      <!-- Sent Parcels -->
+      <div class="parcels-list" *ngIf="activeTab === 'sent'">
+        <div class="parcels-header">
+          <h2>Sent Parcels</h2>
+          <div class="list-actions">
+            <select #sentPageSize (change)="onPageSizeChange(sentPageSize.value)" class="page-size-select">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="parcels-grid" *ngIf="sentParcels.length > 0; else noParcels">
+          <div 
+            class="parcel-card"
+            *ngFor="let parcel of sentParcels; trackBy: trackByParcelId"
+            (click)="viewParcelDetails(parcel)">
+            
+            <div class="parcel-header">
+              <div class="tracking-info">
+                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
+                <span class="parcel-status" [ngClass]="getStatusClass(parcel.status)">
+                  <i [class]="'icon-' + getStatusIcon(parcel.status)"></i>
+                  {{parcel.status | titlecase}}
+                </span>
+              </div>
+              <div class="parcel-actions">
+                <button class="btn-icon" (click)="trackParcel(parcel.trackingNumber); $event.stopPropagation()">
+                  <i class="icon-eye"></i>
+                </button>
+                <button class="btn-icon" (click)="editParcel(parcel.id); $event.stopPropagation()" 
+                        *ngIf="parcel.status === 'PENDING'">
+                  <i class="icon-edit-2"></i>
+                </button>
+                <button class="btn-icon danger" (click)="cancelParcel(parcel.id); $event.stopPropagation()"
+                        *ngIf="parcel.status === 'PENDING' || parcel.status === 'PICKED_UP'">
+                  <i class="icon-x"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="parcel-content">
+              <div class="recipient-info">
+                <h4>To: {{parcel.receiverName}}</h4>
+                <p>{{parcel.deliveryAddress}}</p>
+              </div>
+              
+              <div class="parcel-details">
+                <div class="detail-item">
+                  <i class="icon-package"></i>
+                  <span>{{getWeightCategoryLabel(parcel.weightCategory)}}</span>
+                </div>
+                <div class="detail-item">
+                  <i class="icon-calendar"></i>
+                  <span>{{formatDate(parcel.createdAt)}}</span>
+                </div>
+                <div class="detail-item">
+                  <i class="icon-truck"></i>
+                  <span>ETA: {{formatDate(parcel.estimatedDelivery)}}</span>
+                </div>
+                <div class="detail-item price">
+                  <i class="icon-dollar-sign"></i>
+                  <span>{{formatPrice(parcel.price)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Received Parcels -->
+      <div class="parcels-list" *ngIf="activeTab === 'received'">
+        <div class="parcels-header">
+          <h2>Received Parcels</h2>
+          <div class="list-actions">
+            <select #receivedPageSize (change)="onPageSizeChange(receivedPageSize.value)" class="page-size-select">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="parcels-grid" *ngIf="receivedParcels.length > 0; else noParcels">
+          <div 
+            class="parcel-card"
+            *ngFor="let parcel of receivedParcels; trackBy: trackByParcelId"
+            (click)="viewParcelDetails(parcel)">
+            
+            <div class="parcel-header">
+              <div class="tracking-info">
+                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
+                <span class="parcel-status" [ngClass]="getStatusClass(parcel.status)">
+                  <i [class]="'icon-' + getStatusIcon(parcel.status)"></i>
+                  {{parcel.status | titlecase}}
+                </span>
+              </div>
+              <div class="parcel-actions">
+                <button class="btn-icon" (click)="trackParcel(parcel.trackingNumber); $event.stopPropagation()">
+                  <i class="icon-eye"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="parcel-content">
+              <div class="sender-info">
+                <h4>From: {{parcel.senderName}}</h4>
+                <p>{{parcel.pickupAddress}}</p>
+              </div>
+              
+              <div class="parcel-details">
+                <div class="detail-item">
+                  <i class="icon-package"></i>
+                  <span>{{getWeightCategoryLabel(parcel.weightCategory)}}</span>
+                </div>
+                <div class="detail-item">
+                  <i class="icon-calendar"></i>
+                  <span>{{formatDate(parcel.createdAt)}}</span>
+                </div>
+                <div class="detail-item">
+                  <i class="icon-truck"></i>
+                  <span>ETA: {{formatDate(parcel.estimatedDelivery)}}</span>
+                </div>
+                <div class="detail-item price">
+                  <i class="icon-dollar-sign"></i>
+                  <span>{{formatPrice(parcel.price)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Parcels Template -->
+    <ng-template #noParcels>
+      <div class="no-parcels">
+        <div class="no-parcels-content">
+          <i class="icon-package"></i>
+          <h3>No parcels found</h3>
+          <p *ngIf="activeTab === 'sent'">
+            You haven't sent any parcels yet. Start by creating your first delivery!
+          </p>
+          <p *ngIf="activeTab === 'received'">
+            No parcels are being delivered to you at the moment.
+          </p>
+          <button class="btn btn-primary" (click)="createNewParcel()" *ngIf="activeTab === 'sent'">
+            Send Your First Parcel
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Parcel Details Modal -->
+    <div class="modal-overlay" *ngIf="showParcelDetails" (click)="closeParcelDetails()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Parcel Details</h2>
+          <button class="modal-close" (click)="closeParcelDetails()">
+            <i class="icon-x"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body" *ngIf="selectedParcel">
+          <div class="parcel-detail-section">
+            <h3>Tracking Information</h3>
+            <div class="detail-row">
+              <span class="label">Tracking Number:</span>
+              <span class="value">{{selectedParcel.trackingNumber}}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Status:</span>
+              <span class="value status" [ngClass]="getStatusClass(selectedParcel.status)">
+                {{selectedParcel.status | titlecase}}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Created:</span>
+              <span class="value">{{formatDate(selectedParcel.createdAt)}}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Estimated Delivery:</span>
+              <span class="value">{{formatDate(selectedParcel.estimatedDelivery)}}</span>
+            </div>
+          </div>
+          
+          <div class="parcel-detail-section">
+            <h3>Package Details</h3>
+            <div class="detail-row">
+              <span class="label">Weight:</span>
+              <span class="value">{{selectedParcel.weight}}kg ({{getWeightCategoryLabel(selectedParcel.weightCategory)}})</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Price:</span>
+              <span class="value">{{formatPrice(selectedParcel.price)}}</span>
+            </div>
+          </div>
+          
+          <div class="parcel-detail-section">
+            <h3>Addresses</h3>
+            <div class="address-info">
+              <div class="address-item">
+                <h4>Pickup Address</h4>
+                <p>{{selectedParcel.pickupAddress}}</p>
+              </div>
+              <div class="address-item">
+                <h4>Delivery Address</h4>
+                <p>{{selectedParcel.deliveryAddress}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-primary" (click)="trackParcel(selectedParcel?.trackingNumber || '')">
+            Track Parcel
+          </button>
+          <button class="btn btn-secondary" (click)="closeParcelDetails()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+</div>

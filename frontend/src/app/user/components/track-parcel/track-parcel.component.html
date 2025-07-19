@@ -1,0 +1,19 @@
+<div class="track-parcel-container">
+  <h2>Track Your Parcel</h2>
+  <form (ngSubmit)="track()" class="track-form">
+    <input type="text" [(ngModel)]="trackingNumber" name="trackingNumber" placeholder="Enter tracking number" required>
+    <button class="btn btn-primary" type="submit">Track</button>
+  </form>
+  <div *ngIf="found" class="status-section">
+    <h3>Status: <span class="status-value">{{status}}</span></h3>
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let event of history">
+        <div class="timeline-date">{{event.date}}</div>
+        <div class="timeline-status">{{event.status}}</div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!found && trackingNumber">
+    <p class="not-found">No parcel found for this tracking number.</p>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<div class="parcel-details-container">
+  <h2>Parcel Details</h2>
+  <div class="details-grid">
+    <div class="detail-row">
+      <span class="label">Tracking Number:</span>
+      <span class="value">{{parcel.trackingNumber}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Status:</span>
+      <span class="value" [ngClass]="getStatusClass(parcel.status)">{{parcel.status}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Sender:</span>
+      <span class="value">{{parcel.sender}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Receiver:</span>
+      <span class="value">{{parcel.receiver}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Pickup Address:</span>
+      <span class="value">{{parcel.pickupAddress}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Delivery Address:</span>
+      <span class="value">{{parcel.deliveryAddress}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Weight:</span>
+      <span class="value">{{parcel.weight}} kg</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Price:</span>
+      <span class="value">${{parcel.price}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Created At:</span>
+      <span class="value">{{parcel.createdAt}}</span>
+    </div>
+    <div class="detail-row">
+      <span class="label">Estimated Delivery:</span>
+      <span class="value">{{parcel.estimatedDelivery}}</span>
+    </div>
+  </div>
+</div>

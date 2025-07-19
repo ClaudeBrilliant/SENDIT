@@ -1,0 +1,43 @@
+.parcel-details-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 2rem;
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+h2 {
+  margin-top: 0;
+  color: #3b82f6;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.details-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 0.5rem;
+}
+.detail-row:last-child {
+  border-bottom: none;
+}
+.label {
+  color: #6b7280;
+  font-weight: 500;
+}
+.value {
+  color: #1f2937;
+  font-weight: 500;
+}
+.status-pending { color: #92400e; background: #fef3c7; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-in-transit { color: #3730a3; background: #e0e7ff; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-delivered { color: #065f46; background: #d1fae5; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-cancelled { color: #991b1b; background: #fee2e2; padding: 0.2em 0.7em; border-radius: 1em; }

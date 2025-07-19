@@ -56,4 +56,9 @@ export class NavComponent {
     this.router.navigate(['/faqs']);
     this.isMobileMenuOpen = false;
   }
+
+  navigateToDashboard(): void {
+    this.router.navigate(['/user/dashboard']);
+    this.isMobileMenuOpen = false;
+  }
 } 

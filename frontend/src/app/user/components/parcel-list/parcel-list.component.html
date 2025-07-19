@@ -1,0 +1,26 @@
+<div class="parcel-list-container">
+  <h2>My Parcels</h2>
+  <table class="parcel-table">
+    <thead>
+      <tr>
+        <th>Tracking #</th>
+        <th>Status</th>
+        <th>Receiver</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let parcel of parcels">
+        <td>{{parcel.trackingNumber}}</td>
+        <td><span [ngClass]="getStatusClass(parcel.status)">{{parcel.status}}</span></td>
+        <td>{{parcel.receiver}}</td>
+        <td>{{parcel.createdAt}}</td>
+        <td>
+          <button class="btn btn-primary">View</button>
+          <button class="btn btn-secondary">Track</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

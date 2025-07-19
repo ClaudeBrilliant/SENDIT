@@ -1,0 +1,31 @@
+<div class="profile-container">
+  <h2>My Profile</h2>
+  <div class="profile-header">
+    <img [src]="user.avatar" alt="Avatar" class="avatar">
+    <div class="user-info">
+      <h3>{{user.firstName}} {{user.lastName}}</h3>
+      <p>{{user.email}}</p>
+      <p>{{user.phone}}</p>
+    </div>
+    <button class="btn btn-secondary" (click)="enableEdit()" *ngIf="!editing">Edit</button>
+  </div>
+  <form [formGroup]="profileForm" *ngIf="editing" (ngSubmit)="saveProfile()" class="profile-form">
+    <div class="form-row">
+      <label>First Name</label>
+      <input formControlName="firstName" type="text">
+    </div>
+    <div class="form-row">
+      <label>Last Name</label>
+      <input formControlName="lastName" type="text">
+    </div>
+    <div class="form-row">
+      <label>Email</label>
+      <input formControlName="email" type="email">
+    </div>
+    <div class="form-row">
+      <label>Phone</label>
+      <input formControlName="phone" type="text">
+    </div>
+    <button class="btn btn-primary" type="submit">Save</button>
+  </form>
+</div>

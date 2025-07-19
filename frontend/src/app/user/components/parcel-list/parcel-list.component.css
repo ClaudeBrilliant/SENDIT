@@ -1,0 +1,64 @@
+.parcel-list-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 2rem;
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+h2 {
+  margin-top: 0;
+  color: #3b82f6;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.parcel-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.parcel-table th, .parcel-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+.parcel-table th {
+  color: #6b7280;
+  font-weight: 600;
+  background: #f8fafc;
+}
+.parcel-table td {
+  color: #1f2937;
+}
+.status-pending { color: #92400e; background: #fef3c7; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-in-transit { color: #3730a3; background: #e0e7ff; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-delivered { color: #065f46; background: #d1fae5; padding: 0.2em 0.7em; border-radius: 1em; }
+.status-cancelled { color: #991b1b; background: #fee2e2; padding: 0.2em 0.7em; border-radius: 1em; }
+.btn {
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+.btn-primary {
+  background: #3b82f6;
+  color: #fff;
+}
+.btn-secondary {
+  background: #6b7280;
+  color: #fff;
+}
+@media (max-width: 600px) {
+  .parcel-list-container {
+    padding: 1rem;
+  }
+  .parcel-table th, .parcel-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.9rem;
+  }
+}
