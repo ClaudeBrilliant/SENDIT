@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ProfileComponent } from "../profile/profile.component";
+import { TrackParcelComponent } from "./../track-parcel/track-parcel.component";
 
 // Interfaces
 export interface Parcel {
@@ -49,7 +51,7 @@ export interface DashboardState {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ProfileComponent, TrackParcelComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -153,6 +155,25 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     { value: 'HEAVY', label: 'Heavy (5kg+)' }
   ];
 
+  showProfileModal = false;
+  showTrackParcelModal = false;
+
+  openProfileModal(): void {
+    this.showProfileModal = true;
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+  }
+
+  openTrackParcelModal(): void {
+    this.showTrackParcelModal = true;
+  }
+
+  closeTrackParcelModal(): void {
+    this.showTrackParcelModal = false;
+  }
+
   constructor(
     private router: Router,
     private fb: FormBuilder
@@ -226,12 +247,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.showParcelDetails = false;
   }
 
-  trackParcel(trackingNumber: string): void {
-    this.router.navigate(['/track-parcel', trackingNumber]);
+  trackParcel(trackingNumber?: string): void {
+    if (trackingNumber) {
+      // Optionally handle tracking number logic
+    }
+    this.openTrackParcelModal();
   }
 
   createNewParcel(): void {
-    this.router.navigate(['/create-parcel']);
+    this.trackParcel();
   }
 
   editParcel(parcelId: string): void {
@@ -294,6 +318,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewProfile(): void {
+    this.router.navigate(['/user/profile']);
+  }
+
+  goToProfile(): void {
     this.router.navigate(['/user/profile']);
   }
 

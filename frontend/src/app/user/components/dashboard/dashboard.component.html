@@ -14,12 +14,12 @@
         </div>
         
         <div class="header-actions">
-          <button class="btn btn-primary" (click)="createNewParcel()">
-            <i class="icon-plus"></i>
-            Send Parcel
+          <button class="btn btn-primary" (click)="trackParcel()">
+            <i class="icon-eye"></i>
+            Track Parcel
           </button>
           <div class="user-menu">
-            <button class="btn btn-ghost" (click)="viewProfile()">
+            <button class="btn btn-ghost" (click)="openProfileModal()">
               <i class="icon-user"></i>
               Profile
             </button>
@@ -300,8 +300,8 @@
           <p *ngIf="activeTab === 'received'">
             No parcels are being delivered to you at the moment.
           </p>
-          <button class="btn btn-primary" (click)="createNewParcel()" *ngIf="activeTab === 'sent'">
-            Send Your First Parcel
+          <button class="btn btn-primary" (click)="trackParcel()" *ngIf="activeTab === 'sent'">
+            Track Your First Parcel
           </button>
         </div>
       </div>
@@ -375,6 +375,26 @@
             Close
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeProfileModal()">
+          <i class="icon-x"></i>
+        </button>
+        <app-profile></app-profile>
+      </div>
+    </div>
+
+    <!-- Track Parcel Modal -->
+    <div class="modal-overlay" *ngIf="showTrackParcelModal" (click)="closeTrackParcelModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeTrackParcelModal()">
+          <i class="icon-x"></i>
+        </button>
+        <app-track-parcel></app-track-parcel>
       </div>
     </div>
 </div>

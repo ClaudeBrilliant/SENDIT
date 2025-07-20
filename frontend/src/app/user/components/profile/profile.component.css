@@ -1,16 +1,17 @@
 .profile-container {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(251,159,62,0.08);
   padding: 2rem;
   max-width: 500px;
   margin: 2rem auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 h2 {
   margin-top: 0;
-  color: #3b82f6;
+  color: #FB9F3E;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 .profile-header {
   display: flex;
@@ -23,12 +24,13 @@ h2 {
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #e5e7eb;
+  border: 3px solid #FB9F3E;
 }
 .user-info h3 {
   margin: 0 0 0.3rem 0;
   font-size: 1.2rem;
-  color: #1f2937;
+  color: #FB9F3E;
+  font-weight: 600;
 }
 .user-info p {
   margin: 0;
@@ -38,18 +40,29 @@ h2 {
 .btn {
   padding: 0.5rem 1.2rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
   font-size: 0.95rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .btn-primary {
-  background: #3b82f6;
+  background: #FB9F3E;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(251, 159, 62, 0.15);
+}
+.btn-primary:hover {
+  background: #e88a1a;
 }
 .btn-secondary {
   background: #6b7280;
   color: #fff;
+}
+.btn-secondary:hover {
+  background: #4b5563;
 }
 .profile-form {
   display: grid;
@@ -61,18 +74,19 @@ h2 {
   gap: 0.3rem;
 }
 .form-row label {
-  color: #6b7280;
+  color: #FB9F3E;
   font-weight: 500;
 }
 .form-row input {
   padding: 0.5rem;
   border: 2px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: border-color 0.2s;
 }
 .form-row input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #FB9F3E;
 }
 @media (max-width: 600px) {
   .profile-container {

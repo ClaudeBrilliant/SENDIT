@@ -1,16 +1,17 @@
 .track-parcel-container {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(251,159,62,0.08);
   padding: 2rem;
   max-width: 500px;
   margin: 2rem auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 h2 {
   margin-top: 0;
-  color: #3b82f6;
+  color: #FB9F3E;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 .track-form {
   display: flex;
@@ -21,35 +22,44 @@ h2 {
   flex: 1;
   padding: 0.5rem;
   border: 2px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: border-color 0.2s;
 }
 .track-form input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #FB9F3E;
 }
 .btn {
   padding: 0.5rem 1.2rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
   font-size: 0.95rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .btn-primary {
-  background: #3b82f6;
+  background: #FB9F3E;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(251, 159, 62, 0.15);
+}
+.btn-primary:hover {
+  background: #e88a1a;
 }
 .status-section {
   margin-top: 1.5rem;
 }
 .status-value {
-  color: #3730a3;
+  color: #FB9F3E;
   font-weight: 600;
 }
 .timeline {
   margin-top: 1rem;
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid #FB9F3E;
   padding-left: 1rem;
 }
 .timeline-item {
@@ -66,6 +76,12 @@ h2 {
 .not-found {
   color: #991b1b;
   margin-top: 1rem;
+}
+.map-section h4 {
+  color: #FB9F3E;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 @media (max-width: 600px) {
   .track-parcel-container {
