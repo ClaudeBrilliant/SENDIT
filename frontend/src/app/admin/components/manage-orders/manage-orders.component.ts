@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { UpdateStatusComponent } from '../update-status/update-status.component';
 
 export interface Order {
   id: string;
@@ -36,7 +37,7 @@ export interface Order {
 @Component({
   selector: 'app-manage-orders',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, UpdateStatusComponent],
   templateUrl: './manage-orders.component.html',
   styleUrls: ['./manage-orders.component.css']
 })
@@ -141,6 +142,9 @@ export class ManageOrdersComponent implements OnInit {
       updatedAt: new Date('2024-01-14')
     }
   ];
+
+  showUpdateStatusModal = false;
+  orderToUpdate: Order | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -341,6 +345,24 @@ export class ManageOrdersComponent implements OnInit {
 
   goToDashboard(): void {
     this.router.navigate(['/admin/dashboard']);
+  }
+
+  openUpdateStatus(order: Order): void {
+    this.orderToUpdate = order;
+    this.showUpdateStatusModal = true;
+  }
+
+  closeUpdateStatus(): void {
+    this.showUpdateStatusModal = false;
+    this.orderToUpdate = null;
+  }
+
+  handleStatusUpdated(newStatus: string): void {
+    if (this.orderToUpdate) {
+      this.orderToUpdate.status = newStatus as any;
+      this.orderToUpdate.updatedAt = new Date();
+      this.closeUpdateStatus();
+    }
   }
 
   // Expose Math object for template

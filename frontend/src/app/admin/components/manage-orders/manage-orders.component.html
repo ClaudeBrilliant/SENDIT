@@ -154,7 +154,7 @@
                   </div>
                 </td>
                 <td class="status-cell">
-                  <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                  <span class="status-badge clickable" [ngClass]="getStatusClass(order.status)" (click)="openUpdateStatus(order)">
                     <i [class]="'icon-' + getStatusIcon(order.status)"></i>
                     {{ order.status | titlecase }}
                   </span>
@@ -395,6 +395,17 @@
           Close
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Update Status Modal -->
+  <div class="modal-overlay" *ngIf="showUpdateStatusModal">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <app-update-status
+        [currentStatus]="orderToUpdate?.status || ''"
+        (statusUpdated)="handleStatusUpdated($event)"
+        (cancelled)="closeUpdateStatus()">
+      </app-update-status>
     </div>
   </div>
 </div>
