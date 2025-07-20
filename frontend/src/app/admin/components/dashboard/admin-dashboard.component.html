@@ -72,14 +72,33 @@
         </button>
         
         <button class="sidebar-nav-link" 
-                [class.active]="selectedTab === 'users'" 
-                (click)="selectTab('users')"
-                title="Users">
+                (click)="createOrder()"
+                title="Create Order">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          <span>Create Order</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                (click)="manageOrders()"
+                title="Manage Orders">
+          <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span>Manage Orders</span>
+        </button>
+        
+        <button class="sidebar-nav-link" 
+                (click)="manageUsers()"
+                title="Users Management">
           <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
           </svg>
-          <span>Users</span>
+          <span>Users Management</span>
         </button>
         
         <button class="sidebar-nav-link" 
@@ -129,6 +148,27 @@
             <p class="page-subtitle">Monitor your courier operations at a glance</p>
           </div>
           <div class="page-actions">
+            <button class="btn btn-primary" (click)="createOrder()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Order
+            </button>
+            <button class="btn btn-outline" (click)="manageOrders()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Manage Orders
+            </button>
+            <button class="btn btn-outline" (click)="manageUsers()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+              Users Management
+            </button>
             <button class="btn btn-outline" (click)="refreshData()">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -136,7 +176,7 @@
               </svg>
               Refresh
             </button>
-            <button class="btn btn-primary" (click)="exportReport()">
+            <button class="btn btn-outline" (click)="exportReport()">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -284,7 +324,7 @@
                 <h2 class="card-title">Recent Users</h2>
                 <span class="card-subtitle">Newly registered users</span>
               </div>
-              <button class="card-action" (click)="selectTab('users')">
+              <button class="card-action" (click)="manageUsers()">
                 View All
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -342,17 +382,6 @@
         </div>
       </div>
   
-      <div *ngIf="selectedTab === 'users'" class="tab-content">
-        <header class="page-header">
-          <h1 class="page-title">Users Management</h1>
-          <p class="page-subtitle">Manage user accounts and permissions</p>
-        </header>
-        <!-- Users content will be implemented here -->
-        <div class="coming-soon">
-          <h3>Users management interface coming soon...</h3>
-        </div>
-      </div>
-  
       <div *ngIf="selectedTab === 'analytics'" class="tab-content">
         <header class="page-header">
           <h1 class="page-title">Analytics & Reports</h1>
@@ -373,6 +402,13 @@
         <div class="coming-soon">
           <h3>Settings interface coming soon...</h3>
         </div>
+      </div>
+  
+      <!-- Manage Orders Tab -->
+      <div *ngIf="selectedTab === 'manage-orders'">
+        <!-- BEGIN: Manage Orders Content (from manage-orders.component.html) -->
+        <!-- (Paste the content here, remove the outermost .manage-orders-container div) -->
+        <!-- END: Manage Orders Content -->
       </div>
   
     </main>

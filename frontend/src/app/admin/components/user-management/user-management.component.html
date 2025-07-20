@@ -1,0 +1,197 @@
+<div class="user-management-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goToDashboard()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Dashboard
+        </button>
+        <div class="page-title-section">
+          <h1 class="page-title">Users Management</h1>
+          <p class="page-subtitle">View and manage all users</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search and Filters -->
+  <section class="search-filters-section">
+    <form [formGroup]="searchForm" class="search-filters-form">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label class="filter-label">Search</label>
+          <input type="text" formControlName="searchTerm" class="search-input" placeholder="Search by name, email, phone...">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select formControlName="statusFilter" class="filter-select">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button type="button" class="btn btn-outline" (click)="clearFilters()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- Users Table -->
+  <section class="users-section">
+    <div class="users-container">
+      <!-- Loading State -->
+      <div class="loading-container" *ngIf="isLoading">
+        <div class="loading-spinner"></div>
+        <p>Loading users...</p>
+      </div>
+      <div class="users-table-container" *ngIf="!isLoading">
+        <div class="table-header">
+          <div class="table-info">
+            <h3>Users ({{ filteredUsers.length }})</h3>
+            <p>Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }} of {{ filteredUsers.length }} users</p>
+          </div>
+          <div class="table-actions">
+            <select (change)="onItemsPerPageChange($any($event.target).value)" class="page-size-select">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Parcels</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of getPaginatedUsers(); trackBy: trackByUserId">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phone }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="user.status">{{ user.status | titlecase }}</span>
+                </td>
+                <td>{{ user.parcelsCount }}</td>
+                <td>{{ user.joinedAt | date:'mediumDate' }}</td>
+                <td>
+                  <button class="btn-icon" (click)="viewUserDetails(user)" title="View Details">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                  <button class="btn-icon" (click)="toggleUserStatus(user.id)" [title]="user.status === 'active' ? 'Deactivate' : 'Activate'">
+                    <svg *ngIf="user.status === 'active'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-1.414 1.414A9 9 0 105.636 18.364l1.414-1.414" />
+                    </svg>
+                    <svg *ngIf="user.status === 'inactive'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m4 0h-1v-4h-1m-4 0h-1v-4h-1" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- No Users Found -->
+        <div class="no-users" *ngIf="filteredUsers.length === 0 && !isLoading">
+          <div class="no-users-content">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197" />
+            </svg>
+            <h3>No users found</h3>
+            <p>No users match your current filters. Try adjusting your search criteria.</p>
+            <button class="btn btn-primary" (click)="clearFilters()">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+          <div class="pagination">
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Previous
+            </button>
+            <div class="page-numbers">
+              <button *ngFor="let page of getPageNumbers()" class="page-number" [class.active]="page === currentPage" (click)="onPageChange(page)">
+                {{ page }}
+              </button>
+            </div>
+            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="onPageChange(currentPage + 1)">
+              Next
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Details Modal -->
+  <div class="modal-overlay" *ngIf="selectedUser" (click)="closeUserDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>User Details</h2>
+        <button class="modal-close" (click)="closeUserDetails()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedUser">
+        <div class="user-detail-section">
+          <h3>Profile</h3>
+          <div class="detail-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ selectedUser.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ selectedUser.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Phone:</span>
+            <span class="value">{{ selectedUser.phone }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="value status-badge" [ngClass]="selectedUser.status">{{ selectedUser.status | titlecase }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Parcels:</span>
+            <span class="value">{{ selectedUser.parcelsCount }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Joined:</span>
+            <span class="value">{{ selectedUser.joinedAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeUserDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

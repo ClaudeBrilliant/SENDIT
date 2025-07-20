@@ -9,6 +9,9 @@ import { ServicesComponent } from './shared/components/services/services.compone
 import { AboutComponent } from './shared/components/about/about.component';
 import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
+import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
+import { ManageOrdersComponent } from './admin/components/manage-orders/manage-orders.component';
+import { UserManagementComponent } from './admin/components/user-management/user-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -21,5 +24,8 @@ export const routes: Routes = [
   { path: 'services', component: ServicesComponent },
   { path: 'about', component: AboutComponent },
   { path: 'user/dashboard', component: UserDashboardComponent },
-  { path: 'admin/dashboard', component: AdminDashboardComponent}
+  { path: 'admin/dashboard', component: AdminDashboardComponent },
+  { path: 'admin/create-order', component: CreateOrderComponent },
+  { path: 'admin/manage-orders', component: ManageOrdersComponent },
+  { path: 'admin/user-management', component: UserManagementComponent }
 ];

@@ -8,6 +8,8 @@ import { ContactComponent } from './pages/contact/contact.component';
 import { FaqsComponent } from './pages/faqs/faqs.component';
 import { ServicesComponent } from './shared/components/services/services.component';
 import { AboutComponent } from './shared/components/about/about.component';
+import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
+import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -18,7 +20,9 @@ const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   { path: 'faqs', component: FaqsComponent },
   { path: 'services', component: ServicesComponent },
-  { path: 'about', component: AboutComponent }
+  { path: 'about', component: AboutComponent },
+  { path: 'admin/dashboard', component: AdminDashboardComponent },
+  { path: 'admin/create-order', component: CreateOrderComponent }
 ];
 
 @NgModule({

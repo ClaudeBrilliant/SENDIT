@@ -205,7 +205,19 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   createNewParcel(): void {
-    this.router.navigate(['/admin/parcels/new']);
+    this.router.navigate(['/admin/create-order']);
+  }
+
+  createOrder(): void {
+    this.router.navigate(['/admin/create-order']);
+  }
+
+  manageOrders(): void {
+    this.router.navigate(['/admin/manage-orders']);
+  }
+
+  manageUsers(): void {
+    this.router.navigate(['/admin/user-management']);
   }
 
   exportData(): void {

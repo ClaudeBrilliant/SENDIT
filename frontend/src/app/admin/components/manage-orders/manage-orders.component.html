@@ -1,0 +1,400 @@
+<div class="manage-orders-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goToDashboard()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Dashboard
+        </button>
+        <div class="page-title-section">
+          <h1 class="page-title">Manage Orders</h1>
+          <p class="page-subtitle">View and manage all delivery orders</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="exportOrders()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export Orders
+        </button>
+        <button class="btn btn-primary" (click)="createNewOrder()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Create New Order
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search and Filters -->
+  <section class="search-filters-section">
+    <div class="search-filters-container">
+      <form [formGroup]="searchForm" class="search-filters-form">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label class="filter-label">Search</label>
+            <div class="search-input-wrapper">
+              <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                formControlName="searchTerm"
+                class="search-input"
+                placeholder="Search by tracking number, sender, receiver..."
+              >
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Status</label>
+            <select formControlName="statusFilter" class="filter-select">
+              <option *ngFor="let option of statusOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Date From</label>
+            <input
+              type="date"
+              formControlName="dateFrom"
+              class="filter-input"
+            >
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Date To</label>
+            <input
+              type="date"
+              formControlName="dateTo"
+              class="filter-input"
+            >
+          </div>
+
+          <div class="filter-actions">
+            <button type="button" class="btn btn-outline" (click)="clearFilters()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Orders Table -->
+  <section class="orders-section">
+    <div class="orders-container">
+      <!-- Loading State -->
+      <div class="loading-container" *ngIf="isLoading">
+        <div class="loading-spinner"></div>
+        <p>Loading orders...</p>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="orders-table-container" *ngIf="!isLoading">
+        <div class="table-header">
+          <div class="table-info">
+            <h3>Orders ({{ filteredOrders.length }})</h3>
+            <p>Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredOrders.length) }} of {{ filteredOrders.length }} orders</p>
+          </div>
+          <div class="table-actions">
+            <select (change)="onItemsPerPageChange($any($event.target).value)" class="page-size-select">
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Tracking #</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Package</th>
+                <th>Status</th>
+                <th>Price</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of getPaginatedOrders(); trackBy: trackByOrderId" class="order-row">
+                <td class="tracking-number">
+                  <strong>{{ order.trackingNumber }}</strong>
+                </td>
+                <td class="sender-info">
+                  <div class="contact-name">{{ order.senderName }}</div>
+                  <div class="contact-email">{{ order.senderEmail }}</div>
+                </td>
+                <td class="receiver-info">
+                  <div class="contact-name">{{ order.receiverName }}</div>
+                  <div class="contact-email">{{ order.receiverEmail }}</div>
+                </td>
+                <td class="package-info">
+                  <div class="package-description">{{ order.packageDescription }}</div>
+                  <div class="package-details">
+                    {{ order.weight }}kg • {{ getWeightCategoryLabel(order.weightCategory) }}
+                  </div>
+                </td>
+                <td class="status-cell">
+                  <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                    <i [class]="'icon-' + getStatusIcon(order.status)"></i>
+                    {{ order.status | titlecase }}
+                  </span>
+                </td>
+                <td class="price-cell">
+                  <div class="price">{{ formatPrice(order.totalPrice) }}</div>
+                  <div class="delivery-type">{{ getDeliveryTypeLabel(order.deliveryType) }}</div>
+                </td>
+                <td class="date-cell">
+                  <div class="created-date">{{ formatDate(order.createdAt) }}</div>
+                </td>
+                <td class="actions-cell">
+                  <div class="action-buttons">
+                    <button class="btn-icon" (click)="viewOrderDetails(order)" title="View Details">
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button class="btn-icon" (click)="updateOrderStatus(order.id, 'picked-up')" 
+                            *ngIf="order.status === 'pending'" title="Mark as Picked Up">
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                    </button>
+                    <button class="btn-icon" (click)="updateOrderStatus(order.id, 'in-transit')" 
+                            *ngIf="order.status === 'picked-up'" title="Mark as In Transit">
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </button>
+                    <button class="btn-icon" (click)="updateOrderStatus(order.id, 'out-for-delivery')" 
+                            *ngIf="order.status === 'in-transit'" title="Mark as Out for Delivery">
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </button>
+                    <button class="btn-icon" (click)="updateOrderStatus(order.id, 'delivered')" 
+                            *ngIf="order.status === 'out-for-delivery'" title="Mark as Delivered">
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No Orders Found -->
+        <div class="no-orders" *ngIf="filteredOrders.length === 0 && !isLoading">
+          <div class="no-orders-content">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <h3>No orders found</h3>
+            <p>No orders match your current filters. Try adjusting your search criteria.</p>
+            <button class="btn btn-primary" (click)="clearFilters()">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+          <div class="pagination">
+            <button class="pagination-btn" 
+                    [disabled]="currentPage === 1"
+                    (click)="onPageChange(currentPage - 1)">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M15 19l-7-7 7-7" />
+              </svg>
+              Previous
+            </button>
+            
+            <div class="page-numbers">
+              <button *ngFor="let page of getPageNumbers()" 
+                      class="page-number"
+                      [class.active]="page === currentPage"
+                      (click)="onPageChange(page)">
+                {{ page }}
+              </button>
+            </div>
+            
+            <button class="pagination-btn" 
+                    [disabled]="currentPage === totalPages"
+                    (click)="onPageChange(currentPage + 1)">
+              Next
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order Details Modal -->
+  <div class="modal-overlay" *ngIf="selectedOrder" (click)="closeOrderDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Order Details</h2>
+        <button class="modal-close" (click)="closeOrderDetails()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedOrder">
+        <div class="order-detail-section">
+          <h3>Tracking Information</h3>
+          <div class="detail-row">
+            <span class="label">Tracking Number:</span>
+            <span class="value">{{ selectedOrder.trackingNumber }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="value status" [ngClass]="getStatusClass(selectedOrder.status)">
+              {{ selectedOrder.status | titlecase }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Created:</span>
+            <span class="value">{{ formatDate(selectedOrder.createdAt) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Last Updated:</span>
+            <span class="value">{{ formatDate(selectedOrder.updatedAt) }}</span>
+          </div>
+        </div>
+        
+        <div class="order-detail-section">
+          <h3>Sender Information</h3>
+          <div class="detail-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ selectedOrder.senderName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ selectedOrder.senderEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Phone:</span>
+            <span class="value">{{ selectedOrder.senderPhone }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Pickup Address:</span>
+            <span class="value">{{ selectedOrder.pickupAddress }}</span>
+          </div>
+        </div>
+        
+        <div class="order-detail-section">
+          <h3>Receiver Information</h3>
+          <div class="detail-row">
+            <span class="label">Name:</span>
+            <span class="value">{{ selectedOrder.receiverName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ selectedOrder.receiverEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Phone:</span>
+            <span class="value">{{ selectedOrder.receiverPhone }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Delivery Address:</span>
+            <span class="value">{{ selectedOrder.deliveryAddress }}</span>
+          </div>
+        </div>
+        
+        <div class="order-detail-section">
+          <h3>Package Details</h3>
+          <div class="detail-row">
+            <span class="label">Description:</span>
+            <span class="value">{{ selectedOrder.packageDescription }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Weight:</span>
+            <span class="value">{{ selectedOrder.weight }}kg ({{ getWeightCategoryLabel(selectedOrder.weightCategory) }})</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Dimensions:</span>
+            <span class="value">{{ selectedOrder.dimensions.length }}cm × {{ selectedOrder.dimensions.width }}cm × {{ selectedOrder.dimensions.height }}cm</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Delivery Type:</span>
+            <span class="value">{{ getDeliveryTypeLabel(selectedOrder.deliveryType) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Insurance:</span>
+            <span class="value">{{ selectedOrder.insurance ? 'Yes' : 'No' }}</span>
+          </div>
+        </div>
+        
+        <div class="order-detail-section">
+          <h3>Payment & Pricing</h3>
+          <div class="detail-row">
+            <span class="label">Payment Method:</span>
+            <span class="value">{{ selectedOrder.paymentMethod | titlecase }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total Price:</span>
+            <span class="value price">{{ formatPrice(selectedOrder.totalPrice) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Pickup Date:</span>
+            <span class="value">{{ formatDate(selectedOrder.pickupDate) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Estimated Delivery:</span>
+            <span class="value">{{ formatDate(selectedOrder.estimatedDelivery) }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" (click)="updateOrderStatus(selectedOrder.id, getNextStatus(selectedOrder.status))" 
+                *ngIf="selectedOrder.status !== 'delivered' && selectedOrder.status !== 'cancelled'">
+          Update Status
+        </button>
+        <button class="btn btn-secondary" (click)="closeOrderDetails()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

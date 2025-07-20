@@ -1,0 +1,464 @@
+<div class="create-order-container">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goToDashboard()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Dashboard
+        </button>
+        <div class="page-title-section">
+          <h1 class="page-title">Create New Order</h1>
+          <p class="page-subtitle">Create a new delivery order for customers</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="goToOrders()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          View Orders
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Success/Error Messages -->
+  <div class="messages-container" *ngIf="successMessage || errorMessage">
+    <div class="alert success" *ngIf="successMessage">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {{ successMessage }}
+      <button class="alert-close" (click)="clearMessages()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="alert error" *ngIf="errorMessage">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      {{ errorMessage }}
+      <button class="alert-close" (click)="clearMessages()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Form -->
+  <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="order-form">
+    <div class="form-grid">
+      <!-- Sender Information -->
+      <div class="form-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Sender Information
+          </h2>
+          <p class="section-subtitle">Details of the person sending the package</p>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senderName" class="form-label">Full Name *</label>
+            <input
+              type="text"
+              id="senderName"
+              formControlName="senderName"
+              class="form-input"
+              [class.error]="isFieldInvalid('senderName')"
+              placeholder="Enter sender's full name"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('senderName')">
+              {{ getFieldError('senderName') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="senderEmail" class="form-label">Email Address *</label>
+            <input
+              type="email"
+              id="senderEmail"
+              formControlName="senderEmail"
+              class="form-input"
+              [class.error]="isFieldInvalid('senderEmail')"
+              placeholder="Enter sender's email"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('senderEmail')">
+              {{ getFieldError('senderEmail') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senderPhone" class="form-label">Phone Number *</label>
+            <input
+              type="tel"
+              id="senderPhone"
+              formControlName="senderPhone"
+              class="form-input"
+              [class.error]="isFieldInvalid('senderPhone')"
+              placeholder="Enter sender's phone number"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('senderPhone')">
+              {{ getFieldError('senderPhone') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="senderAddress" class="form-label">Pickup Address *</label>
+            <textarea
+              id="senderAddress"
+              formControlName="senderAddress"
+              class="form-textarea"
+              [class.error]="isFieldInvalid('senderAddress')"
+              placeholder="Enter complete pickup address"
+              rows="3"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('senderAddress')">
+              {{ getFieldError('senderAddress') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receiver Information -->
+      <div class="form-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Receiver Information
+          </h2>
+          <p class="section-subtitle">Details of the person receiving the package</p>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="receiverName" class="form-label">Full Name *</label>
+            <input
+              type="text"
+              id="receiverName"
+              formControlName="receiverName"
+              class="form-input"
+              [class.error]="isFieldInvalid('receiverName')"
+              placeholder="Enter receiver's full name"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('receiverName')">
+              {{ getFieldError('receiverName') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="receiverEmail" class="form-label">Email Address *</label>
+            <input
+              type="email"
+              id="receiverEmail"
+              formControlName="receiverEmail"
+              class="form-input"
+              [class.error]="isFieldInvalid('receiverEmail')"
+              placeholder="Enter receiver's email"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('receiverEmail')">
+              {{ getFieldError('receiverEmail') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="receiverPhone" class="form-label">Phone Number *</label>
+            <input
+              type="tel"
+              id="receiverPhone"
+              formControlName="receiverPhone"
+              class="form-input"
+              [class.error]="isFieldInvalid('receiverPhone')"
+              placeholder="Enter receiver's phone number"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('receiverPhone')">
+              {{ getFieldError('receiverPhone') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="receiverAddress" class="form-label">Delivery Address *</label>
+            <textarea
+              id="receiverAddress"
+              formControlName="receiverAddress"
+              class="form-textarea"
+              [class.error]="isFieldInvalid('receiverAddress')"
+              placeholder="Enter complete delivery address"
+              rows="3"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('receiverAddress')">
+              {{ getFieldError('receiverAddress') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Package Details -->
+      <div class="form-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            Package Details
+          </h2>
+          <p class="section-subtitle">Information about the package being shipped</p>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="packageDescription" class="form-label">Package Description *</label>
+            <textarea
+              id="packageDescription"
+              formControlName="packageDescription"
+              class="form-textarea"
+              [class.error]="isFieldInvalid('packageDescription')"
+              placeholder="Describe the contents of the package"
+              rows="3"
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('packageDescription')">
+              {{ getFieldError('packageDescription') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="weightCategory" class="form-label">Weight Category *</label>
+            <select
+              id="weightCategory"
+              formControlName="weightCategory"
+              class="form-select"
+              [class.error]="isFieldInvalid('weightCategory')"
+            >
+              <option *ngFor="let category of weightCategories" [value]="category.value">
+                {{ category.label }} - KSh {{ category.price }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('weightCategory')">
+              {{ getFieldError('weightCategory') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="weight" class="form-label">Weight (kg) *</label>
+            <input
+              type="number"
+              id="weight"
+              formControlName="weight"
+              class="form-input"
+              [class.error]="isFieldInvalid('weight')"
+              placeholder="Enter weight in kg"
+              step="0.1"
+              min="0.1"
+              max="50"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('weight')">
+              {{ getFieldError('weight') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="length" class="form-label">Length (cm) *</label>
+            <input
+              type="number"
+              id="length"
+              formControlName="dimensions.length"
+              class="form-input"
+              [class.error]="isFieldInvalid('dimensions.length')"
+              placeholder="Length"
+              min="1"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('dimensions.length')">
+              {{ getFieldError('dimensions.length') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="width" class="form-label">Width (cm) *</label>
+            <input
+              type="number"
+              id="width"
+              formControlName="dimensions.width"
+              class="form-input"
+              [class.error]="isFieldInvalid('dimensions.width')"
+              placeholder="Width"
+              min="1"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('dimensions.width')">
+              {{ getFieldError('dimensions.width') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="height" class="form-label">Height (cm) *</label>
+            <input
+              type="number"
+              id="height"
+              formControlName="dimensions.height"
+              class="form-input"
+              [class.error]="isFieldInvalid('dimensions.height')"
+              placeholder="Height"
+              min="1"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('dimensions.height')">
+              {{ getFieldError('dimensions.height') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Options -->
+      <div class="form-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Delivery Options
+          </h2>
+          <p class="section-subtitle">Choose delivery speed and additional services</p>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="deliveryType" class="form-label">Delivery Speed *</label>
+            <select
+              id="deliveryType"
+              formControlName="deliveryType"
+              class="form-select"
+              [class.error]="isFieldInvalid('deliveryType')"
+            >
+              <option *ngFor="let option of deliveryOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('deliveryType')">
+              {{ getFieldError('deliveryType') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pickupDate" class="form-label">Pickup Date *</label>
+            <input
+              type="date"
+              id="pickupDate"
+              formControlName="pickupDate"
+              class="form-input"
+              [class.error]="isFieldInvalid('pickupDate')"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('pickupDate')">
+              {{ getFieldError('pickupDate') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label for="specialInstructions" class="form-label">Special Instructions</label>
+            <textarea
+              id="specialInstructions"
+              formControlName="specialInstructions"
+              class="form-textarea"
+              placeholder="Any special handling instructions or notes"
+              rows="2"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="paymentMethod" class="form-label">Payment Method *</label>
+            <select
+              id="paymentMethod"
+              formControlName="paymentMethod"
+              class="form-select"
+              [class.error]="isFieldInvalid('paymentMethod')"
+            >
+              <option value="cash_on_delivery">Cash on Delivery</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="mobile_money">Mobile Money</option>
+              <option value="card">Credit/Debit Card</option>
+            </select>
+            <div class="error-message" *ngIf="isFieldInvalid('paymentMethod')">
+              {{ getFieldError('paymentMethod') }}
+            </div>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                formControlName="insurance"
+                class="checkbox-input"
+              >
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-label">Add Insurance (KSh 200)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price Summary -->
+    <div class="price-summary">
+      <div class="summary-header">
+        <h3>Order Summary</h3>
+      </div>
+      <div class="summary-content">
+        <div class="summary-row">
+          <span>Weight Category:</span>
+          <span>{{ getWeightCategoryLabel(orderForm.get('weightCategory')?.value) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery Type:</span>
+          <span>{{ getDeliveryOptionLabel(orderForm.get('deliveryType')?.value) }}</span>
+        </div>
+        <div class="summary-row" *ngIf="orderForm.get('insurance')?.value">
+          <span>Insurance:</span>
+          <span>KSh 200</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total Price:</span>
+          <span class="total-price">{{ getFormattedPrice() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" (click)="goToDashboard()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+        <div class="btn-content" *ngIf="!isLoading">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Create Order
+        </div>
+        <div class="btn-content" *ngIf="isLoading">
+          <div class="loading-spinner"></div>
+          Creating Order...
+        </div>
+      </button>
+    </div>
+  </form>
+</div>
