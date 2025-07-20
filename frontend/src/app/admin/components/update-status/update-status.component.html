@@ -1,0 +1,20 @@
+<div class="update-status-container">
+  <form [formGroup]="statusForm" (ngSubmit)="submit()" class="update-status-form">
+    <h2>Update Order Status</h2>
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" formControlName="status" class="status-select">
+        <option *ngFor="let option of statusOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+    <div class="current-status">
+      <strong>Current Status:</strong> <span>{{ currentStatus | titlecase }}</span>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="statusForm.invalid">Update</button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+</div>
