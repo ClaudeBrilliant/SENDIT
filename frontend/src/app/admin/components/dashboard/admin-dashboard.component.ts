@@ -3,6 +3,10 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AnalyticsComponent } from "../analytics/analytics.component";
+import { AdminTrackParcelComponent } from '../track-parcel/track-parcel.component';
+import { LogsComponent } from '../logs/logs.component';
+import { SettingsComponent } from '../settings/settings.component';
+import { ParcelsComponent } from '../parcels/parcels.component';
 
 export interface ParcelStats {
   total: number;
@@ -39,7 +43,7 @@ export interface User {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, AnalyticsComponent],
+  imports: [CommonModule, FormsModule, AnalyticsComponent, AdminTrackParcelComponent, LogsComponent, SettingsComponent, ParcelsComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })

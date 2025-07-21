@@ -102,6 +102,28 @@
         </button>
         
         <button class="sidebar-nav-link" 
+        [class.active]="selectedTab === 'track-parcel'" 
+        (click)="selectTab('track-parcel')"
+        title="Track Parcel">
+  <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+          d="M9 17v-2a4 4 0 014-4h3m4 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <span>Track Parcel</span>
+</button>
+        
+        <button class="sidebar-nav-link" 
+        [class.active]="selectedTab === 'logs'" 
+        (click)="selectTab('logs')"
+        title="Logs">
+  <svg class="sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <span>Logs</span>
+</button>
+        
+        <button class="sidebar-nav-link" 
                 [class.active]="selectedTab === 'analytics'" 
                 (click)="selectTab('analytics')"
                 title="Analytics">
@@ -142,7 +164,7 @@
       
       <!-- Dashboard Overview Tab -->
       <div *ngIf="selectedTab === 'overview'" class="tab-content">
-        <header class="page-header">
+        <!-- <header class="page-header">
           <div class="page-title-section">
             <h1 class="page-title">Dashboard Overview</h1>
             <p class="page-subtitle">Monitor your courier operations at a glance</p>
@@ -184,7 +206,7 @@
               Export Report
             </button>
           </div>
-        </header>
+        </header> -->
   
         <!-- Statistics Cards -->
         <section class="stats-section">
@@ -372,14 +394,7 @@
   
       <!-- Placeholder for other tabs -->
       <div *ngIf="selectedTab === 'parcels'" class="tab-content">
-        <header class="page-header">
-          <h1 class="page-title">Parcels Management</h1>
-          <p class="page-subtitle">Manage all parcels and tracking information</p>
-        </header>
-        <!-- Parcels content will be implemented here -->
-        <div class="coming-soon">
-          <h3>Parcels management interface coming soon...</h3>
-        </div>
+        <app-parcels></app-parcels>
       </div>
   
       <div *ngIf="selectedTab === 'analytics'" class="tab-content">
@@ -395,10 +410,7 @@
           <h1 class="page-title">Settings</h1>
           <p class="page-subtitle">Configure application settings and preferences</p>
         </header>
-        <!-- Settings content will be implemented here -->
-        <div class="coming-soon">
-          <h3>Settings interface coming soon...</h3>
-        </div>
+        <app-settings></app-settings>
       </div>
   
       <!-- Manage Orders Tab -->
@@ -406,6 +418,14 @@
         <!-- BEGIN: Manage Orders Content (from manage-orders.component.html) -->
         <!-- (Paste the content here, remove the outermost .manage-orders-container div) -->
         <!-- END: Manage Orders Content -->
+      </div>
+
+      <div *ngIf="selectedTab === 'track-parcel'" class="tab-content">
+        <app-admin-track-parcel></app-admin-track-parcel>
+      </div>
+  
+      <div *ngIf="selectedTab === 'logs'" class="tab-content">
+        <app-logs></app-logs>
       </div>
   
     </main>
