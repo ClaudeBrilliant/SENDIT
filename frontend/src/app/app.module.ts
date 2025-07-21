@@ -18,6 +18,7 @@ import { ServicesComponent } from './shared/components/services/services.compone
 import { AboutComponent } from './shared/components/about/about.component';
 import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
 import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
+import { ProfileComponent } from './user/components/profile/profile.component';
 
 @NgModule({
   imports: [
@@ -37,7 +38,8 @@ import { AdminDashboardComponent } from './admin/components/dashboard/admin-dash
     ServicesComponent,
     AboutComponent,
     CreateOrderComponent,
-    AdminDashboardComponent
+    AdminDashboardComponent,
+    ProfileComponent
   ],
   providers: [],
   bootstrap: []

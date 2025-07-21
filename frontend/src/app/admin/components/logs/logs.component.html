@@ -1,0 +1,21 @@
+<div class="logs-container">
+  <h2 style="color: #FB9F3E;">System Logs</h2>
+  <table class="logs-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of logs">
+        <td>{{log.date}}</td>
+        <td>{{log.user}}</td>
+        <td>{{log.action}}</td>
+        <td>{{log.details}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div> 

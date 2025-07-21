@@ -12,6 +12,8 @@ import { AdminDashboardComponent } from './admin/components/dashboard/admin-dash
 import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
 import { ManageOrdersComponent } from './admin/components/manage-orders/manage-orders.component';
 import { UserManagementComponent } from './admin/components/user-management/user-management.component';
+import { ProfileComponent } from './user/components/profile/profile.component';
+import { TrackParcelComponent } from './user/components/track-parcel/track-parcel.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -24,6 +26,8 @@ export const routes: Routes = [
   { path: 'services', component: ServicesComponent },
   { path: 'about', component: AboutComponent },
   { path: 'user/dashboard', component: UserDashboardComponent },
+  { path: 'user/profile', component: ProfileComponent },
+  { path: 'track-parcel', component: TrackParcelComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent },
   { path: 'admin/create-order', component: CreateOrderComponent },
   { path: 'admin/manage-orders', component: ManageOrdersComponent },

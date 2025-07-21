@@ -10,6 +10,7 @@ import { ServicesComponent } from './shared/components/services/services.compone
 import { AboutComponent } from './shared/components/about/about.component';
 import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
 import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
+import { ProfileComponent } from './user/components/profile/profile.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -22,7 +23,8 @@ const routes: Routes = [
   { path: 'services', component: ServicesComponent },
   { path: 'about', component: AboutComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent },
-  { path: 'admin/create-order', component: CreateOrderComponent }
+  { path: 'admin/create-order', component: CreateOrderComponent },
+  { path: 'user/profile', component: ProfileComponent }
 ];
 
 @NgModule({
