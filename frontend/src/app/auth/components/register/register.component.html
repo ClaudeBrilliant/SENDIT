@@ -1,244 +1,270 @@
+<app-nav></app-nav>
 <div class="register-container">
-  <div class="register-card">
-    <!-- Header -->
-    <div class="register-header">
-      <button class="back-button" (click)="navigateToHome()">
-        <svg class="back-icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-        </svg>
-      </button>
-      <div class="logo-section">
-        <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+  <div class="register-split-layout">
+    <!-- Left Side: Branding -->
+    <div class="register-left">
+      <div class="brand-content">
+        <svg class="brand-logo" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
-        <h1 class="logo-text">SendIT</h1>
+        <h1 class="brand-name">SendIT</h1>
+        <p class="brand-tagline">Join Us and Experience Seamless Deliveries</p>
+        <div class="brand-features">
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>Real-Time Tracking</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Competitive Pricing</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <span>24/7 Customer Support</span>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Register Form -->
-    <div class="form-container">
-      <div class="form-header">
-        <h2 class="form-title">Create Account</h2>
-        <p class="form-subtitle">Join SendIT for fast and reliable delivery services</p>
-      </div>
-
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-        <!-- Name Fields -->
-        <div class="name-fields">
-          <div class="form-group">
-            <label for="firstName" class="form-label">First Name</label>
-            <div class="input-container">
-              <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-              <input
-                type="text"
-                id="firstName"
-                formControlName="firstName"
-                class="form-input"
-                [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
-                placeholder="Enter your first name"
-              >
-            </div>
-            <div class="error-message" *ngIf="getErrorMessage('firstName')">
-              {{ getErrorMessage('firstName') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="lastName" class="form-label">Last Name</label>
-            <div class="input-container">
-              <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-              <input
-                type="text"
-                id="lastName"
-                formControlName="lastName"
-                class="form-input"
-                [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
-                placeholder="Enter your last name"
-              >
-            </div>
-            <div class="error-message" *ngIf="getErrorMessage('lastName')">
-              {{ getErrorMessage('lastName') }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Email Field -->
-        <div class="form-group">
-          <label for="email" class="form-label">Email Address</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    
+    <!-- Right Side: Form -->
+    <div class="register-right">
+      <div class="register-card">
+        <!-- Header -->
+        <div class="register-header">
+          <button class="back-button" (click)="navigateToHome()">
+            <svg class="back-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
             </svg>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              class="form-input"
-              [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-              placeholder="Enter your email address"
-            >
-          </div>
-          <div class="error-message" *ngIf="getErrorMessage('email')">
-            {{ getErrorMessage('email') }}
-          </div>
-        </div>
-
-        <!-- Phone Field -->
-        <div class="form-group">
-          <label for="phone" class="form-label">Phone Number</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-            </svg>
-            <input
-              type="tel"
-              id="phone"
-              formControlName="phone"
-              class="form-input"
-              [class.error]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched"
-              placeholder="Enter your phone number"
-            >
-          </div>
-          <div class="error-message" *ngIf="getErrorMessage('phone')">
-            {{ getErrorMessage('phone') }}
-          </div>
-        </div>
-
-        <!-- Password Field -->
-        <div class="form-group">
-          <label for="password" class="form-label">Password</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
-            </svg>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              formControlName="password"
-              class="form-input"
-              [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-              placeholder="Create a strong password"
-            >
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="togglePasswordVisibility()"
-              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
-            >
-              <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path *ngIf="!showPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                <path *ngIf="showPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="error-message" *ngIf="getErrorMessage('password')">
-            {{ getErrorMessage('password') }}
-          </div>
-          
-          <!-- Password Strength Indicator -->
-          <div class="password-strength" *ngIf="registerForm.get('password')?.value">
-            <div class="strength-bar">
-              <div class="strength-fill" [style.width.%]="getPasswordStrength().percentage" [style.background-color]="getPasswordStrength().color"></div>
-            </div>
-            <span class="strength-text" [style.color]="getPasswordStrength().color">
-              {{ getPasswordStrength().strength }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Confirm Password Field -->
-        <div class="form-group">
-          <label for="confirmPassword" class="form-label">Confirm Password</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
-            </svg>
-            <input
-              [type]="showConfirmPassword ? 'text' : 'password'"
-              id="confirmPassword"
-              formControlName="confirmPassword"
-              class="form-input"
-              [class.error]="hasPasswordMismatch()"
-              placeholder="Confirm your password"
-            >
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="toggleConfirmPasswordVisibility()"
-              [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
-            >
-              <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path *ngIf="!showConfirmPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                <path *ngIf="showConfirmPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="error-message" *ngIf="hasPasswordMismatch()">
-            Passwords do not match
-          </div>
-        </div>
-
-        <!-- Checkboxes -->
-        <div class="checkbox-group">
-          <label class="checkbox-container">
-            <input type="checkbox" formControlName="terms" class="checkbox-input">
-            <span class="checkmark"></span>
-            I agree to the <a href="#" class="link-text">Terms of Service</a> and <a href="#" class="link-text">Privacy Policy</a>
-          </label>
-          <div class="error-message" *ngIf="getErrorMessage('terms')">
-            {{ getErrorMessage('terms') }}
-          </div>
-        </div>
-
-        <div class="checkbox-group">
-          <label class="checkbox-container">
-            <input type="checkbox" formControlName="newsletter" class="checkbox-input">
-            <span class="checkmark"></span>
-            Subscribe to our newsletter for updates and offers
-          </label>
-        </div>
-
-        <!-- Error Message -->
-        <div class="error-alert" *ngIf="errorMessage">
-          <svg class="error-icon" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          {{ errorMessage }}
-        </div>
-
-        <!-- Success Message -->
-        <div class="success-alert" *ngIf="successMessage">
-          <svg class="success-icon" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          {{ successMessage }}
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="submit-button" [disabled]="isLoading">
-          <span *ngIf="!isLoading">Create Account</span>
-          <div *ngIf="isLoading" class="loading-spinner">
-            <svg class="spinner" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-                <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-                <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
-              </circle>
-            </svg>
-          </div>
-        </button>
-      </form>
-
-      <!-- Sign In Link -->
-      <div class="signin-link">
-        <p>Already have an account? 
-          <button type="button" class="link-button" (click)="navigateToLogin()">
-            Sign in
+            Back to Home
           </button>
-        </p>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-container">
+          <div class="form-header">
+            <h2 class="form-title">Create Account</h2>
+            <p class="form-subtitle">Join SendIT for fast and reliable delivery services</p>
+          </div>
+
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+            <!-- Name Fields -->
+            <div class="name-fields">
+              <div class="form-group">
+                <label for="firstName" class="form-label">First Name</label>
+                <div class="input-container">
+                  <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  <input
+                    type="text"
+                    id="firstName"
+                    formControlName="firstName"
+                    class="form-input"
+                    [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+                    placeholder="Enter your first name"
+                  >
+                </div>
+                <div class="error-message" *ngIf="getErrorMessage('firstName')">
+                  {{ getErrorMessage('firstName') }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="lastName" class="form-label">Last Name</label>
+                <div class="input-container">
+                  <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  <input
+                    type="text"
+                    id="lastName"
+                    formControlName="lastName"
+                    class="form-input"
+                    [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+                    placeholder="Enter your last name"
+                  >
+                </div>
+                <div class="error-message" *ngIf="getErrorMessage('lastName')">
+                  {{ getErrorMessage('lastName') }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="form-input"
+                  [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                  placeholder="Enter your email address"
+                >
+              </div>
+              <div class="error-message" *ngIf="getErrorMessage('email')">
+                {{ getErrorMessage('email') }}
+              </div>
+            </div>
+
+            <!-- Phone Field -->
+            <div class="form-group">
+              <label for="phone" class="form-label">Phone Number</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                </svg>
+                <input
+                  type="tel"
+                  id="phone"
+                  formControlName="phone"
+                  class="form-input"
+                  [class.error]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched"
+                  placeholder="Enter your phone number"
+                >
+              </div>
+              <div class="error-message" *ngIf="getErrorMessage('phone')">
+                {{ getErrorMessage('phone') }}
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                </svg>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  formControlName="password"
+                  class="form-input"
+                  [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                  placeholder="Create a strong password"
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                >
+                  <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="!showPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    <path *ngIf="showPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="error-message" *ngIf="getErrorMessage('password')">
+                {{ getErrorMessage('password') }}
+              </div>
+              
+              <!-- Password Strength Indicator -->
+              <div class="password-strength" *ngIf="registerForm.get('password')?.value">
+                <div class="strength-bar">
+                  <div class="strength-fill" [style.width.%]="getPasswordStrength().percentage" [style.background-color]="getPasswordStrength().color"></div>
+                </div>
+                <span class="strength-text" [style.color]="getPasswordStrength().color">
+                  {{ getPasswordStrength().strength }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+              <label for="confirmPassword" class="form-label">Confirm Password</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                </svg>
+                <input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  id="confirmPassword"
+                  formControlName="confirmPassword"
+                  class="form-input"
+                  [class.error]="hasPasswordMismatch()"
+                  placeholder="Confirm your password"
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="toggleConfirmPasswordVisibility()"
+                  [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
+                >
+                  <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="!showConfirmPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    <path *ngIf="showConfirmPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="error-message" *ngIf="hasPasswordMismatch()">
+                Passwords do not match
+              </div>
+            </div>
+
+            <!-- Checkboxes -->
+            <div class="checkbox-group">
+              <label class="checkbox-container">
+                <input type="checkbox" formControlName="terms" class="checkbox-input">
+                <span class="checkmark"></span>
+                I agree to the <a href="#" class="link-text">Terms of Service</a> and <a href="#" class="link-text">Privacy Policy</a>
+              </label>
+              <div class="error-message" *ngIf="getErrorMessage('terms')">
+                {{ getErrorMessage('terms') }}
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <label class="checkbox-container">
+                <input type="checkbox" formControlName="newsletter" class="checkbox-input">
+                <span class="checkmark"></span>
+                Subscribe to our newsletter for updates and offers
+              </label>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-alert" *ngIf="errorMessage">
+              <svg class="error-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              {{ errorMessage }}
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-alert" *ngIf="successMessage">
+              <svg class="success-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              {{ successMessage }}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Create Account</span>
+              <div *ngIf="isLoading" class="loading-spinner">
+                <svg class="spinner" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+              </div>
+            </button>
+          </form>
+
+          <!-- Sign In Link -->
+          <div class="signin-link">
+            <p>Already have an account? 
+              <button type="button" class="link-button" (click)="navigateToLogin()">
+                Sign in
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
