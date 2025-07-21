@@ -329,6 +329,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/auth/login']);
   }
 
+  goHome(): void {
+    this.router.navigate(['/home']);
+  }
+
   getDashboardStats() {
     return {
       totalSentParcels: this.sentParcels.length,
