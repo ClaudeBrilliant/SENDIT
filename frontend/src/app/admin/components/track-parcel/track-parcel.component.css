@@ -1,0 +1,63 @@
+.admin-track-parcel-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 2rem;
+  max-width: 500px;
+  margin: 2rem auto;
+}
+.track-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.track-form input[type="text"] {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #FB9F3E;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.btn-primary {
+  background: #FB9F3E;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-primary:hover {
+  background: #e88c1c;
+}
+.status-section {
+  margin-top: 1.5rem;
+}
+.status-value {
+  font-weight: bold;
+}
+.timeline {
+  margin: 1rem 0;
+  border-left: 3px solid #FB9F3E;
+  padding-left: 1rem;
+}
+.timeline-item {
+  margin-bottom: 0.5rem;
+}
+.timeline-date {
+  font-size: 0.95rem;
+  color: #888;
+}
+.timeline-status {
+  font-size: 1.05rem;
+  color: #333;
+}
+.map-section {
+  margin-top: 1.5rem;
+}
+.not-found {
+  color: #d32f2f;
+  margin-top: 1rem;
+  font-weight: 500;
+} 
