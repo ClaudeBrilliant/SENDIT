@@ -27,4 +27,31 @@ export class AnalyticsComponent {
     { month: 'May', value: 200 },
     { month: 'Jun', value: 220 }
   ];
+
+  // Pie chart data: order status distribution
+  statusDistribution = [
+    { label: 'Delivered', value: 987, color: '#4CAF50' },
+    { label: 'In Transit', value: 156, color: '#2196F3' },
+    { label: 'Pending', value: 89, color: '#FB9F3E' },
+    { label: 'Cancelled', value: 15, color: '#F44336' }
+  ];
+
+  getPieChartSegments() {
+    const total = this.statusDistribution.reduce((sum, s) => sum + s.value, 0);
+    let startAngle = 0;
+    return this.statusDistribution.map(segment => {
+      const angle = (segment.value / total) * 360;
+      const endAngle = startAngle + angle;
+      const largeArc = angle > 180 ? 1 : 0;
+      // Calculate SVG arc
+      const x1 = 100 + 100 * Math.cos((Math.PI * startAngle) / 180);
+      const y1 = 100 + 100 * Math.sin((Math.PI * startAngle) / 180);
+      const x2 = 100 + 100 * Math.cos((Math.PI * endAngle) / 180);
+      const y2 = 100 + 100 * Math.sin((Math.PI * endAngle) / 180);
+      const path = `M100,100 L${x1},${y1} A100,100 0 ${largeArc},1 ${x2},${y2} Z`;
+      const result = { ...segment, path, startAngle, endAngle };
+      startAngle = endAngle;
+      return result;
+    });
+  }
 } 
