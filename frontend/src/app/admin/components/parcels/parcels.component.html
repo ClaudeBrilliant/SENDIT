@@ -1,0 +1,29 @@
+<div class="parcels-container">
+  <h2 style="color: #FB9F3E;">Parcels Management</h2>
+  <table class="parcels-table">
+    <thead>
+      <tr>
+        <th>Tracking #</th>
+        <th>Sender</th>
+        <th>Receiver</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let parcel of parcels">
+        <td>{{parcel.trackingNumber}}</td>
+        <td>{{parcel.sender}}</td>
+        <td>{{parcel.receiver}}</td>
+        <td><span class="status-badge" [ngClass]="parcel.status.toLowerCase()">{{parcel.status}}</span></td>
+        <td>{{parcel.createdAt}}</td>
+        <td>
+          <button class="btn-action view" (click)="viewParcel(parcel)">View</button>
+          <button class="btn-action edit" (click)="editParcel(parcel)">Edit</button>
+          <button class="btn-action delete" (click)="deleteParcel(parcel)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div> 

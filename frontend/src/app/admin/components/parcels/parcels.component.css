@@ -1,0 +1,50 @@
+.parcels-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+.parcels-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.parcels-table th {
+  background: #FB9F3E;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+.parcels-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: #FB9F3E;
+}
+.status-badge.delivered { background: #4CAF50; }
+.status-badge[ngClass~='in'] { background: #2196F3; }
+.status-badge.pending { background: #FB9F3E; }
+.status-badge.cancelled { background: #F44336; }
+.btn-action {
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 1rem;
+  margin-right: 0.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-action.view { background: #2196F3; color: #fff; }
+.btn-action.edit { background: #FB9F3E; color: #fff; }
+.btn-action.delete { background: #F44336; color: #fff; }
+.btn-action:hover { opacity: 0.85; } 
