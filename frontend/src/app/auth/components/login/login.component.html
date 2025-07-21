@@ -1,140 +1,166 @@
+<app-nav></app-nav>
 <div class="login-container">
-  <div class="login-card">
-    <!-- Header -->
-    <div class="login-header">
-      <button class="back-button" (click)="navigateToHome()">
-        <svg class="back-icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-        </svg>
-      </button>
-      <div class="logo-section">
-        <svg class="logo-icon" fill="currentColor" viewBox="0 0 24 24">
+  <div class="login-split-layout">
+    <!-- Left Side: Branding -->
+    <div class="login-left">
+      <div class="brand-content">
+        <svg class="brand-logo" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
-        <h1 class="logo-text">SendIT</h1>
+        <h1 class="brand-name">SendIT</h1>
+        <p class="brand-tagline">Your Trusted Delivery Partner</p>
+        <div class="brand-features">
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>Fast & Reliable</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Secure Deliveries</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <span>24/7 Support</span>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Login Form -->
-    <div class="form-container">
-      <div class="form-header">
-        <h2 class="form-title">Welcome Back</h2>
-        <p class="form-subtitle">Sign in to your account to continue</p>
-      </div>
-
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-        <!-- Email Field -->
-        <div class="form-group">
-          <label for="email" class="form-label">Email Address</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    
+    <!-- Right Side: Form -->
+    <div class="login-right">
+      <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+          <button class="back-button" (click)="navigateToHome()">
+            <svg class="back-icon" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
             </svg>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              class="form-input"
-              [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-              placeholder="Enter your email"
-            >
-          </div>
-          <div class="error-message" *ngIf="getErrorMessage('email')">
-            {{ getErrorMessage('email') }}
-          </div>
+            Back to Home
+          </button>
         </div>
 
-        <!-- Password Field -->
-        <div class="form-group">
-          <label for="password" class="form-label">Password</label>
-          <div class="input-container">
-            <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
-            </svg>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              id="password"
-              formControlName="password"
-              class="form-input"
-              [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-              placeholder="Enter your password"
-            >
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="togglePasswordVisibility()"
-              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
-            >
-              <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
-                <path *ngIf="!showPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                <path *ngIf="showPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+        <!-- Login Form -->
+        <div class="form-container">
+          <div class="form-header">
+            <h2 class="form-title">Welcome Back</h2>
+            <p class="form-subtitle">Sign in to your account to continue</p>
+          </div>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+            <!-- Email Field -->
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="form-input"
+                  [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                  placeholder="Enter your email"
+                >
+              </div>
+              <div class="error-message" *ngIf="getErrorMessage('email')">
+                {{ getErrorMessage('email') }}
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-container">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                </svg>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  formControlName="password"
+                  class="form-input"
+                  [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                  placeholder="Enter your password"
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+                >
+                  <svg class="toggle-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="!showPassword" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                    <path *ngIf="showPassword" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="error-message" *ngIf="getErrorMessage('password')">
+                {{ getErrorMessage('password') }}
+              </div>
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="form-options">
+              <label class="checkbox-container">
+                <input type="checkbox" formControlName="rememberMe" class="checkbox-input">
+                <span class="checkmark"></span>
+                Remember me
+              </label>
+              <button type="button" class="forgot-link" (click)="navigateToForgotPassword()">
+                Forgot password?
+              </button>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-alert" *ngIf="errorMessage">
+              <svg class="error-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
+              {{ errorMessage }}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Sign In</span>
+              <div *ngIf="isLoading" class="loading-spinner">
+                <svg class="spinner" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+                    <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+                    <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+                  </circle>
+                </svg>
+              </div>
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="divider">
+            <span class="divider-text">or</span>
+          </div>
+
+          <!-- Social Login -->
+          <div class="social-login">
+            <button class="social-button google">
+              <svg class="social-icon" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
             </button>
           </div>
-          <div class="error-message" *ngIf="getErrorMessage('password')">
-            {{ getErrorMessage('password') }}
+
+          <!-- Sign Up Link -->
+          <div class="signup-link">
+            <p>Don't have an account? 
+              <button type="button" class="link-button" (click)="navigateToRegister()">
+                Sign up
+              </button>
+            </p>
           </div>
         </div>
-
-        <!-- Remember Me & Forgot Password -->
-        <div class="form-options">
-          <label class="checkbox-container">
-            <input type="checkbox" formControlName="rememberMe" class="checkbox-input">
-            <span class="checkmark"></span>
-            Remember me
-          </label>
-          <button type="button" class="forgot-link" (click)="navigateToForgotPassword()">
-            Forgot password?
-          </button>
-        </div>
-
-        <!-- Error Message -->
-        <div class="error-alert" *ngIf="errorMessage">
-          <svg class="error-icon" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          {{ errorMessage }}
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="submit-button" [disabled]="isLoading">
-          <span *ngIf="!isLoading">Sign In</span>
-          <div *ngIf="isLoading" class="loading-spinner">
-            <svg class="spinner" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="31.416" stroke-dashoffset="31.416">
-                <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
-                <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
-              </circle>
-            </svg>
-          </div>
-        </button>
-      </form>
-
-      <!-- Divider -->
-      <div class="divider">
-        <span class="divider-text">or</span>
-      </div>
-
-      <!-- Social Login -->
-      <div class="social-login">
-        <button class="social-button google">
-          <svg class="social-icon" viewBox="0 0 24 24">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          Continue with Google
-        </button>
-      </div>
-
-      <!-- Sign Up Link -->
-      <div class="signup-link">
-        <p>Don't have an account? 
-          <button type="button" class="link-button" (click)="navigateToRegister()">
-            Sign up
-          </button>
-        </p>
       </div>
     </div>
   </div>
