@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NavComponent } from '../../../shared/components/nav/nav.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-track-parcel',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule, NavComponent, FooterComponent],
   templateUrl: './track-parcel.component.html',
   styleUrls: ['./track-parcel.component.css']
 })

@@ -47,6 +47,11 @@ export class NavComponent {
     this.isMobileMenuOpen = false;
   }
 
+  navigateToTrackParcel(): void {
+    this.router.navigate(['/track-parcel']);
+    this.isMobileMenuOpen = false;
+  }
+
   navigateToContact(): void {
     this.router.navigate(['/contact']);
     this.isMobileMenuOpen = false;

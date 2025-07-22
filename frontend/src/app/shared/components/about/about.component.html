@@ -2,27 +2,7 @@
 
 <div class="about-container">
   <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">About SendIT</h1>
-      <p class="hero-subtitle">Revolutionizing delivery services with innovation, reliability, and customer-first approach</p>
-    </div>
-  </section>
 
-  <!-- Stats Section -->
-  <section class="stats-section">
-    <div class="container">
-      <div class="stats-grid">
-        <div
-          *ngFor="let stat of stats"
-          class="stat-card"
-        >
-          <div class="stat-number">{{ stat.number }}</div>
-          <div class="stat-label">{{ stat.label }}</div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Story Section -->
   <section class="story-section">
@@ -138,11 +118,7 @@
           class="team-card"
         >
           <div class="member-image">
-            <div class="image-placeholder">
-              <svg fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </div>
+            <img [src]="member.image" [alt]="member.name" class="profile-img"/>
           </div>
           <div class="member-info">
             <h3 class="member-name">{{ member.name }}</h3>
@@ -181,23 +157,3 @@
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="cta-section">
-    <div class="container">
-      <div class="cta-content">
-        <h2>Join the SendIT Family</h2>
-        <p>Experience the difference that customer-first delivery service makes</p>
-        <div class="cta-buttons">
-          <button class="cta-button primary">
-            Get Started Today
-          </button>
-          <button class="cta-button secondary">
-            Contact Us
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<app-footer></app-footer> 

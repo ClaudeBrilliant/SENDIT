@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavComponent } from '../nav/nav.component';
-import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, NavComponent, FooterComponent],
+  imports: [CommonModule, NavComponent],
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.css']
 })
@@ -71,33 +70,26 @@ export class AboutComponent {
 
   team = [
     {
-      name: 'Alex Johnson',
+      name: 'Adewale Adebayo',
       position: 'CEO & Founder',
-      image: 'assets/images/team/ceo.jpg',
-      bio: 'Former logistics executive with 15+ years of experience in the delivery industry.',
+      image: '../../../assets/images/ceo.jpeg',
+      bio: 'Visionary leader with a passion for logistics and 15+ years of industry experience.',
       linkedin: '#'
     },
     {
-      name: 'Sarah Chen',
-      position: 'CTO',
-      image: 'assets/images/team/cto.jpg',
-      bio: 'Tech enthusiast leading our digital transformation and innovation initiatives.',
+      name: 'Fatima Aliyu',
+      position: 'Chief Technology Officer',
+      image: '../../../assets/images/ceo.jpeg',
+      bio: 'Expert in scalable tech solutions, driving our digital-first approach.',
       linkedin: '#'
     },
     {
-      name: 'Mike Rodriguez',
+      name: 'Kwame Osei',
       position: 'Head of Operations',
-      image: 'assets/images/team/operations.jpg',
-      bio: 'Operations expert ensuring smooth delivery processes and customer satisfaction.',
+      image: '../../../assets/images/ceo.jpeg',
+      bio: 'Master of efficiency, ensuring seamless and timely deliveries for all our clients.',
       linkedin: '#'
     },
-    {
-      name: 'Emily Davis',
-      position: 'Head of Customer Success',
-      image: 'assets/images/team/customer-success.jpg',
-      bio: 'Customer advocate dedicated to providing exceptional service and support.',
-      linkedin: '#'
-    }
   ];
 
   achievements = [

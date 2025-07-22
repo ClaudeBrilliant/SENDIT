@@ -8,10 +8,6 @@ import { FaqsComponent } from './pages/faqs/faqs.component';
 import { ServicesComponent } from './shared/components/services/services.component';
 import { AboutComponent } from './shared/components/about/about.component';
 import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
-import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
-import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
-import { ManageOrdersComponent } from './admin/components/manage-orders/manage-orders.component';
-import { UserManagementComponent } from './admin/components/user-management/user-management.component';
 import { ProfileComponent } from './user/components/profile/profile.component';
 import { TrackParcelComponent } from './user/components/track-parcel/track-parcel.component';
 
@@ -28,8 +24,8 @@ export const routes: Routes = [
   { path: 'user/dashboard', component: UserDashboardComponent },
   { path: 'user/profile', component: ProfileComponent },
   { path: 'track-parcel', component: TrackParcelComponent },
-  { path: 'admin/dashboard', component: AdminDashboardComponent },
-  { path: 'admin/create-order', component: CreateOrderComponent },
-  { path: 'admin/manage-orders', component: ManageOrdersComponent },
-  { path: 'admin/user-management', component: UserManagementComponent }
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  }
 ];

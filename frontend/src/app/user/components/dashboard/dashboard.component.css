@@ -15,7 +15,7 @@
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -753,4 +753,35 @@
   .parcel-card {
     padding: 1rem;
   }
+}
+
+/* --- Expanded Dashboard Width Overrides --- */
+.header-content,
+.dashboard-stats,
+.dashboard-tabs,
+.search-filters,
+.parcels-section {
+  max-width: 1400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.dashboard-tabs {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.dashboard-stats {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.search-filters {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.parcels-section {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }

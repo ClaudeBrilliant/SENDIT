@@ -354,26 +354,25 @@
   box-shadow: 0 8px 25px rgba(251, 159, 62, 0.1);
 }
 
-.member-image {
-  margin-bottom: 1.5rem;
-}
-
-.member-image .image-placeholder {
+.team-card .member-image {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FB9F3E 0%, #e88a35 100%);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+  overflow: hidden;
+  margin: 0 auto 1.5rem;
+  border: 4px solid #FB9F3E;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.member-image .image-placeholder svg {
-  width: 3rem;
-  height: 3rem;
-  opacity: 0.8;
+.team-card .profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.team-card:hover .profile-img {
+  transform: scale(1.1);
 }
 
 .member-name {

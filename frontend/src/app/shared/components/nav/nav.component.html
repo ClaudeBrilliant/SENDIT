@@ -9,13 +9,14 @@
       </div>
     </div>
 
-    <div class="nav-menu" [class.active]="isMobileMenuOpen">
-      <a class="nav-link" (click)="navigateToHome()">Home</a>
-      <a class="nav-link" (click)="navigateToServices()">Services</a>
-      <a class="nav-link" (click)="navigateToAbout()">About</a>
-      <a class="nav-link" (click)="navigateToContact()">Contact</a>
-      <a class="nav-link" (click)="navigateToFaqs()">FAQs</a>
-    </div>
+    <ul class="nav-links" [class.open]="isMobileMenuOpen">
+      <li><a (click)="navigateToHome()" class="nav-link">Home</a></li>
+      <li><a (click)="navigateToServices()" class="nav-link">Services</a></li>
+      <!-- <li><a (click)="navigateToAbout()" class="nav-link">About</a></li> -->
+      <li><a (click)="navigateToTrackParcel()" class="nav-link">Track Parcel</a></li>
+      <li><a (click)="navigateToContact()" class="nav-link">Contact</a></li>
+      <li><a (click)="navigateToFaqs()" class="nav-link">FAQs</a></li>
+    </ul>
 
     <div class="nav-actions">
       <button class="btn btn-outline" (click)="navigateToDashboard()">Dashboard</button>

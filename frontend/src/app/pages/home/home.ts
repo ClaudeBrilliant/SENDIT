@@ -3,11 +3,12 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavComponent } from '../../shared/components/nav/nav.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { AboutComponent } from "../../shared/components/about/about.component";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [NavComponent, FooterComponent],
+  imports: [NavComponent, FooterComponent, AboutComponent],
   templateUrl: './home.html',
   styleUrls: ['./home.css']
 })

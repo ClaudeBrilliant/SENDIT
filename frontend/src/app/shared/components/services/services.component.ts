@@ -60,23 +60,7 @@ export class ServicesComponent {
       deliveryTime: 'Same day',
       popular: false
     },
-    {
-      id: 4,
-      name: 'International Shipping',
-      icon: '🌍',
-      description: 'Worldwide delivery to over 200 countries',
-      features: [
-        'Customs documentation',
-        'International tracking',
-        'Insurance up to $2000',
-        'Delivery confirmation',
-        'Multi-language support',
-        'Express and standard options'
-      ],
-      price: 'Starting from $29.99',
-      deliveryTime: '7-14 business days',
-      popular: false
-    }
+   
   ];
 
   additionalServices = [
