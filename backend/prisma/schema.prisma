@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  fullName        String    @default("")
+  phoneNumber     String?
+  role            Role      @default(USER)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  orders          Order[]
+  parcelsReceived Parcel[]  @relation("ReceivedParcels")
+  parcelsSent     Parcel[]  @relation("SentParcels")
+
+  @@map("users")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(CREATED)
+  totalAmount Float
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  parcels     Parcel[]
+
+  @@map("orders")
+}
+
+model Parcel {
+  id                String         @id @default(cuid())
+  trackingNumber    String         @unique
+  senderId          String
+  receiverId        String
+  weight            Float
+  dimensions        String?
+  description       String
+  category          WeightCategory
+  pickupAddress     String
+  pickupLat         Float
+  pickupLng         Float
+  destAddress       String
+  destLat           Float
+  destLng           Float
+  status            DeliveryStatus @default(PENDING)
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  quotedPrice       Float
+  finalPrice        Float?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  deletedAt         DateTime?
+  orderId           String?
+  order             Order?         @relation(fields: [orderId], references: [id])
+  receiver          User           @relation("ReceivedParcels", fields: [receiverId], references: [id])
+  sender            User           @relation("SentParcels", fields: [senderId], references: [id])
+  statusUpdates     StatusUpdate[]
+
+  @@map("parcels")
+}
+
+model StatusUpdate {
+  id        String         @id @default(cuid())
+  parcelId  String
+  status    DeliveryStatus
+  message   String?
+  location  String?
+  updatedBy String?
+  isPublic  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  parcel    Parcel         @relation(fields: [parcelId], references: [id])
+
+  @@map("status_updates")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  oldValue  Json?
+  newValue  Json?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED_DELIVERY
+  CANCELLED
+  RETURNED
+}
+
+enum WeightCategory {
+  LIGHT
+  MEDIUM
+  HEAVY
+  EXTRA_HEAVY
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
