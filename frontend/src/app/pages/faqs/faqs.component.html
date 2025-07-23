@@ -46,7 +46,6 @@
             class="category-button"
             [class.active]="activeCategory === category.id"
           >
-            <span class="category-icon">{{ category.icon }}</span>
             <span class="category-name">{{ category.name }}</span>
           </button>
         </div>
@@ -80,7 +79,6 @@
               [attr.aria-expanded]="isExpanded(faq.id)"
             >
               <div class="question-content">
-                <span class="category-badge">{{ getCategoryIcon(faq.category) }}</span>
                 <h3 class="question-text">{{ faq.question }}</h3>
               </div>
               <svg class="expand-icon" fill="currentColor" viewBox="0 0 24 24">

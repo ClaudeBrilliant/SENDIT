@@ -17,12 +17,12 @@ export class FaqsComponent {
   expandedItems: Set<number> = new Set();
 
   categories = [
-    { id: 'all', name: 'All Questions', icon: '📋' },
-    { id: 'shipping', name: 'Shipping & Delivery', icon: '📦' },
-    { id: 'tracking', name: 'Tracking & Updates', icon: '📍' },
-    { id: 'pricing', name: 'Pricing & Payment', icon: '💰' },
-    { id: 'account', name: 'Account & Security', icon: '🔐' },
-    { id: 'support', name: 'Support & Help', icon: '🆘' }
+    { id: 'all', name: 'All Questions' },
+    { id: 'shipping', name: 'Shipping & Delivery' },
+    { id: 'tracking', name: 'Tracking & Updates' },
+    { id: 'pricing', name: 'Pricing & Payment'},
+    { id: 'account', name: 'Account & Security' },
+    { id: 'support', name: 'Support & Help' }
   ];
 
   faqs = [
@@ -128,11 +128,6 @@ export class FaqsComponent {
 
   isExpanded(id: number): boolean {
     return this.expandedItems.has(id);
-  }
-
-  getCategoryIcon(categoryId: string): string {
-    const category = this.categories.find(cat => cat.id === categoryId);
-    return category ? category.icon : '📋';
   }
 
   getCategoryName(categoryId: string): string {

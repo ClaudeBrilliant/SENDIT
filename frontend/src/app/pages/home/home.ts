@@ -27,19 +27,19 @@ export class HomeComponent implements OnInit {
   // Features data
   features = [
     {
-      icon: 'shield',
+     
       title: 'Real-time Tracking',
       description: 'Track your packages in real-time with GPS location updates and instant notifications.',
       color: 'bg-blue-500'
     },
     {
-      icon: 'clock',
+      
       title: 'Fast Delivery',
       description: 'Same-day and next-day delivery options available for urgent packages.',
       color: 'bg-green-500'
     },
     {
-      icon: 'check-circle',
+     
       title: 'Secure & Reliable',
       description: 'Your packages are insured and handled by our trusted courier partners.',
       color: 'bg-purple-500'

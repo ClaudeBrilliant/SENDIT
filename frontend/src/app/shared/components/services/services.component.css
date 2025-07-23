@@ -1,6 +1,7 @@
 /* Services Component Styles */
 .services-container {
   min-height: 100vh;
+  padding-top: 4rem;
   background: #f8fafc;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }

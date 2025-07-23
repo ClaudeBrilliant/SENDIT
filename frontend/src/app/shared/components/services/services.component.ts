@@ -15,7 +15,6 @@ export class ServicesComponent {
     {
       id: 1,
       name: 'Standard Delivery',
-      icon: '📦',
       description: 'Reliable delivery within 3-5 business days',
       features: [
         'Package tracking',
@@ -30,7 +29,6 @@ export class ServicesComponent {
     {
       id: 2,
       name: 'Express Delivery',
-      icon: '⚡',
       description: 'Fast delivery within 1-2 business days',
       features: [
         'Priority handling',
@@ -46,7 +44,6 @@ export class ServicesComponent {
     {
       id: 3,
       name: 'Same-Day Delivery',
-      icon: '🚀',
       description: 'Ultra-fast delivery on the same day',
       features: [
         'Same-day pickup and delivery',
@@ -66,25 +63,21 @@ export class ServicesComponent {
   additionalServices = [
     {
       name: 'Package Insurance',
-      icon: '🛡️',
       description: 'Additional coverage for valuable items',
       price: 'From $2.99'
     },
     {
       name: 'Signature Confirmation',
-      icon: '✍️',
       description: 'Proof of delivery with recipient signature',
       price: 'From $3.99'
     },
     {
       name: 'Saturday Delivery',
-      icon: '📅',
       description: 'Weekend delivery service',
       price: 'From $5.99'
     },
     {
       name: 'Package Pickup',
-      icon: '🏠',
       description: 'Convenient pickup from your location',
       price: 'From $4.99'
     }
@@ -92,22 +85,18 @@ export class ServicesComponent {
 
   features = [
     {
-      icon: '📍',
       title: 'Real-Time Tracking',
       description: 'Track your packages in real-time with GPS location updates'
     },
     {
-      icon: '🔒',
       title: 'Secure & Reliable',
       description: 'Your packages are handled with care and fully insured'
     },
     {
-      icon: '📱',
       title: 'Mobile App',
       description: 'Manage your shipments on the go with our mobile app'
     },
     {
-      icon: '🌱',
       title: 'Eco-Friendly',
       description: 'We use sustainable packaging and carbon-neutral delivery'
     }

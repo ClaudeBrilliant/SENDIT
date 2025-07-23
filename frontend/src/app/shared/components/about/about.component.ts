@@ -19,22 +19,22 @@ export class AboutComponent {
 
   values = [
     {
-      icon: '🚀',
+   
       title: 'Innovation',
       description: 'We constantly innovate to provide the best delivery experience using cutting-edge technology.'
     },
     {
-      icon: '🤝',
+    
       title: 'Reliability',
       description: 'Your trust is our priority. We deliver on our promises, every single time.'
     },
     {
-      icon: '🌱',
+     
       title: 'Sustainability',
       description: 'We\'re committed to eco-friendly practices and reducing our carbon footprint.'
     },
     {
-      icon: '💙',
+      
       title: 'Customer First',
       description: 'Every decision we make is centered around providing exceptional customer service.'
     }
@@ -94,22 +94,22 @@ export class AboutComponent {
 
   achievements = [
     {
-      icon: '🏆',
+     
       title: 'Best Delivery Service 2023',
       description: 'Awarded by Logistics Excellence Association'
     },
     {
-      icon: '⭐',
+   
       title: '5-Star Customer Rating',
       description: 'Consistently rated 5 stars by our customers'
     },
     {
-      icon: '🌍',
+    
       title: 'Global Reach',
       description: 'Serving customers in over 200 countries'
     },
     {
-      icon: '🔒',
+     
       title: 'Security Certified',
       description: 'ISO 27001 certified for data security'
     }

@@ -25,7 +25,6 @@
           (click)="selectService(service)"
         >
           <div class="service-header">
-            <div class="service-icon">{{ service.icon }}</div>
             <div class="service-info">
               <h3 class="service-name">{{ service.name }}</h3>
               <p class="service-description">{{ service.description }}</p>
@@ -70,7 +69,6 @@
           *ngFor="let service of additionalServices"
           class="additional-service-card"
         >
-          <div class="service-icon">{{ service.icon }}</div>
           <h3 class="service-name">{{ service.name }}</h3>
           <p class="service-description">{{ service.description }}</p>
           <span class="service-price">{{ service.price }}</span>
@@ -92,7 +90,6 @@
           *ngFor="let feature of features"
           class="feature-card"
         >
-          <div class="feature-icon">{{ feature.icon }}</div>
           <h3 class="feature-title">{{ feature.title }}</h3>
           <p class="feature-description">{{ feature.description }}</p>
         </div>
