@@ -6,6 +6,7 @@ import { NavComponent } from '../../../shared/components/nav/nav.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { latLng, tileLayer, marker, icon, MapOptions, Layer, polyline, LatLngBounds } from 'leaflet';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import { CommonModule } from '@angular/common';
 
 interface NominatimResponse {
   place_id: number;
@@ -267,5 +268,12 @@ export class TrackParcelComponent implements AfterViewInit, OnDestroy {
       console.error('Search error:', error);
       return [];
     }
+  }
+
+  ngAfterViewInit(): void {
+    throw new Error('Method not implemented.');
+  }
+  ngOnDestroy(): void {
+    throw new Error('Method not implemented.');
   }
 }
