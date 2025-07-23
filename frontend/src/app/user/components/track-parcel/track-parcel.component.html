@@ -2,56 +2,79 @@
 <div class="track-parcel-container">
   <h2>Track Your Parcel</h2>
   <form (ngSubmit)="track()" class="track-form">
-    <input type="text" [(ngModel)]="trackingNumber" name="trackingNumber" placeholder="Enter tracking number" required>
-    <button class="btn btn-primary" type="submit">Track</button>
+    <input type="text" [(ngModel)]="trackingNumber" name="trackingNumber" placeholder="Enter tracking number (Try: SEND123456 or SEND789012)" required>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">
+      <span *ngIf="loading">Loading...</span>
+      <span *ngIf="!loading">Track</span>
+    </button>
   </form>
   
   <div *ngIf="found" class="status-section">
-    <h3>Status: <span class="status-value">{{status}}</span></h3>
+    <h3>Status: <span class="status-value" [class.delivered]="status === 'Delivered'">{{status}}</span></h3>
     
-    <!-- Timeline Section -->
-    <div class="timeline">
-      <div class="timeline-item" *ngFor="let event of history">
-        <div class="timeline-date">{{event.date}}</div>
-        <div class="timeline-status">{{event.status}}</div>
-        <div class="timeline-location" *ngIf="event.location">{{event.location}}</div>
+    <!-- Location Summary -->
+    <div class="location-summary">
+      <div class="location-item">
+        <strong>From:</strong> {{pickupLocation}}
+      </div>
+      <div class="location-item">
+        <strong>To:</strong> {{deliveryLocation}}
+      </div>
+      <div class="location-item" *ngIf="currentLocation && status !== 'Delivered'">
+        <strong>Current Location:</strong> {{currentLocation}}
       </div>
     </div>
     
-    <!-- Google Maps Section -->
+    <!-- Timeline -->
+    <div class="timeline">
+      <h4>Tracking History</h4>
+      <div class="timeline-item" *ngFor="let event of history; let last = last" [class.current]="last && status !== 'Delivered'">
+        <div class="timeline-date">{{event.date}}</div>
+        <div class="timeline-status">{{event.status}}</div>
+        <div class="timeline-location" *ngIf="event.location">📍 {{event.location}}</div>
+      </div>
+    </div>
+    
+    <!-- Map Section -->
     <div class="map-section" *ngIf="pickupCoordinates && deliveryCoordinates">
       <h4>Route Map</h4>
       <div class="map-container">
-        <div #mapContainer class="google-map" id="map"></div>
+        <div leaflet 
+             [leafletOptions]="mapOptions" 
+             [leafletLayers]="mapLayers" 
+             style="height: 400px; width: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        </div>
       </div>
       
-      <!-- Route Information -->
-      <div class="route-info" *ngIf="routeInfo">
-        <div class="info-item">
-          <strong>Distance:</strong> {{routeInfo.distance}}
+      <!-- Map Legend -->
+      <div class="map-legend">
+        <div class="legend-item">
+          <span class="legend-marker pickup"></span>
+          <span>Pickup Location</span>
         </div>
-        <div class="info-item">
-          <strong>Duration:</strong> {{routeInfo.duration}}
+        <div class="legend-item">
+          <span class="legend-marker delivery"></span>
+          <span>Delivery Location</span>
         </div>
-        <div class="info-item">
-          <strong>Current Location:</strong> {{currentLocation}}
+        <div class="legend-item" *ngIf="status === 'In Transit'">
+          <span class="legend-marker current"></span>
+          <span>Current Location</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-line" [class.dashed]="status !== 'Delivered'"></span>
+          <span>{{status === 'Delivered' ? 'Completed Route' : 'Planned Route'}}</span>
         </div>
       </div>
     </div>
-    
-    <!-- Estimated Delivery -->
-    <div class="delivery-estimate" *ngIf="estimatedDelivery">
-      <h4>Estimated Delivery</h4>
-      <p class="delivery-date">{{estimatedDelivery}}</p>
-    </div>
   </div>
   
-  <div *ngIf="!found && trackingNumber && trackingNumber.length > 0">
-    <p class="not-found">No parcel found for tracking number: {{trackingNumber}}</p>
+  <div *ngIf="!found && trackingNumber && !loading">
+    <p class="not-found">❌ No parcel found for tracking number: <strong>{{trackingNumber}}</strong></p>
+    <p class="try-examples">Try these examples: <code>SEND123456</code> or <code>SEND789012</code></p>
   </div>
   
-  <div *ngIf="loading" class="loading">
-    <p>Loading tracking information...</p>
+  <div *ngIf="loading" class="loading-indicator">
+    <p>🔍 Searching for your parcel and locating real places...</p>
   </div>
 </div>
-<!-- <app-footer></app-footer> -->
+<app-footer></app-footer>

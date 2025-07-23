@@ -1,28 +1,29 @@
 
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
-import { CommonModule } from '@angular/common';
-import { environment } from '../../../../../environments/environment';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { latLng, tileLayer, marker, icon, MapOptions, Layer, polyline, LatLngBounds } from 'leaflet';
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
-declare var google: any;
-
-interface TrackingEvent {
-  date: string;
-  status: string;
-  location?: string;
-  coordinates?: { lat: number, lng: number };
-}
-
-interface RouteInfo {
-  distance: string;
-  duration: string;
+interface NominatimResponse {
+  place_id: number;
+  lat: string;
+  lon: string;
+  display_name: string;
+  address: {
+    city?: string;
+    county?: string;
+    state?: string;
+    country?: string;
+  };
 }
 
 @Component({
   selector: 'app-track-parcel',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavComponent],
+  imports: [CommonModule, FormsModule, NavComponent, FooterComponent, LeafletModule, HttpClientModule],
   templateUrl: './track-parcel.component.html',
   styleUrls: ['./track-parcel.component.css']
 })
@@ -32,282 +33,239 @@ export class TrackParcelComponent implements AfterViewInit, OnDestroy {
   trackingNumber = '';
   found = false;
   status = '';
-  loading = false;
-  history: TrackingEvent[] = [];
+  history: { date: string, status: string, location?: string }[] = [];
+  
+  // Real place names
+  pickupLocation = '';
+  deliveryLocation = '';
+  currentLocation = '';
+  
   pickupCoordinates: { lat: number, lng: number } | null = null;
   deliveryCoordinates: { lat: number, lng: number } | null = null;
-  currentLocation = '';
-  estimatedDelivery = '';
-  routeInfo: RouteInfo | null = null;
+  currentCoordinates: { lat: number, lng: number } | null = null;
 
-  private map: any;
-  private directionsService: any;
-  private directionsRenderer: any;
-  private markers: any[] = [];
+  mapOptions: MapOptions = {
+    layers: [
+      tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      })
+    ],
+    zoom: 7,
+    center: latLng(-1.286389, 36.817223) // Default to Nairobi, Kenya
+  };
+  
+  mapLayers: Layer[] = [];
+  loading = false;
 
-  constructor() {
-    this.loadGoogleMapsScript();
-  }
+  constructor(private http: HttpClient) {}
 
-  ngAfterViewInit() {
-    // Map will be initialized after Google Maps script loads
-  }
-
-  ngOnDestroy() {
-    // Clean up markers and map instances
-    this.clearMarkers();
-  }
-
-  private loadGoogleMapsScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (typeof google !== 'undefined' && google.maps) {
-        resolve();
-        return;
+  // Geocode a place name to coordinates using OpenStreetMap Nominatim
+  async geocodePlace(placeName: string): Promise<{ lat: number, lng: number } | null> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(placeName)}&limit=1`;
+      const response = await this.http.get<NominatimResponse[]>(url).toPromise();
+      
+      if (response && response.length > 0) {
+        return {
+          lat: parseFloat(response[0].lat),
+          lng: parseFloat(response[0].lon)
+        };
       }
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
+  }
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsApiKey}&libraries=geometry`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject();
-      document.head.appendChild(script);
-    });
+  // Reverse geocode coordinates to place name
+  async reverseGeocode(lat: number, lng: number): Promise<string> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+      const response = await this.http.get<NominatimResponse>(url).toPromise();
+      
+      if (response) {
+        return response.display_name;
+      }
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
   }
 
   async track() {
     this.loading = true;
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock tracking logic with multiple tracking numbers for demo
-    if (this.trackingNumber === 'SEND123456') {
-      this.found = true;
-      this.status = 'In Transit';
-      this.currentLocation = 'Nakuru Distribution Center';
-      this.estimatedDelivery = 'January 24, 2024 - 2:00 PM';
-      
-      this.history = [
-        { 
-          date: '2024-01-20 09:00 AM', 
-          status: 'Order Created', 
-          location: 'Nairobi Warehouse',
-          coordinates: { lat: -1.286389, lng: 36.817223 }
-        },
-        { 
-          date: '2024-01-20 11:30 AM', 
-          status: 'Package Picked Up', 
-          location: 'Nairobi Sorting Facility',
-          coordinates: { lat: -1.286389, lng: 36.817223 }
-        },
-        { 
-          date: '2024-01-21 08:00 AM', 
-          status: 'In Transit', 
-          location: 'Nakuru Distribution Center',
-          coordinates: { lat: -0.3031, lng: 36.0800 }
-        }
-      ];
-      
-      this.pickupCoordinates = { lat: -1.286389, lng: 36.817223 }; // Nairobi
-      this.deliveryCoordinates = { lat: -0.091702, lng: 34.767956 }; // Kisumu
-      
-    } else if (this.trackingNumber === 'SEND789012') {
-      this.found = true;
-      this.status = 'Delivered';
-      this.currentLocation = 'Delivered to recipient';
-      this.estimatedDelivery = 'Delivered on January 23, 2024';
-      
-      this.history = [
-        { 
-          date: '2024-01-21 10:00 AM', 
-          status: 'Order Created', 
-          location: 'Mombasa Warehouse',
-          coordinates: { lat: -4.0435, lng: 39.6682 }
-        },
-        { 
-          date: '2024-01-22 02:00 PM', 
-          status: 'In Transit', 
-          location: 'Nairobi Hub',
-          coordinates: { lat: -1.286389, lng: 36.817223 }
-        },
-        { 
-          date: '2024-01-23 11:00 AM', 
-          status: 'Out for Delivery', 
-          location: 'Thika Distribution Center',
-          coordinates: { lat: -1.0332, lng: 37.0690 }
-        },
-        { 
-          date: '2024-01-23 03:30 PM', 
-          status: 'Delivered', 
-          location: 'Thika - Customer Address',
-          coordinates: { lat: -1.0332, lng: 37.0690 }
-        }
-      ];
-      
-      this.pickupCoordinates = { lat: -4.0435, lng: 39.6682 }; // Mombasa
-      this.deliveryCoordinates = { lat: -1.0332, lng: 37.0690 }; // Thika
-      
-    } else {
-      this.found = false;
-      this.status = '';
-      this.history = [];
-      this.pickupCoordinates = null;
-      this.deliveryCoordinates = null;
-      this.currentLocation = '';
-      this.estimatedDelivery = '';
-      this.routeInfo = null;
-    }
-
-    this.loading = false;
-
-    // Initialize map after data is loaded
-    if (this.found && this.pickupCoordinates && this.deliveryCoordinates) {
-      setTimeout(() => {
-        this.initializeMap();
-      }, 100);
-    }
-  }
-
-  private async initializeMap() {
     try {
-      await this.loadGoogleMapsScript();
-      
-      if (!this.mapContainer || !this.pickupCoordinates || !this.deliveryCoordinates) {
-        return;
-      }
-
-      // Initialize map
-      this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-        zoom: 7,
-        center: this.pickupCoordinates,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        styles: [
-          {
-            featureType: 'poi',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
-      });
-
-      // Initialize directions service and renderer
-      this.directionsService = new google.maps.DirectionsService();
-      this.directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: false,
-        polylineOptions: {
-          strokeColor: '#4285f4',
-          strokeWeight: 4,
-          strokeOpacity: 0.8
-        }
-      });
-      this.directionsRenderer.setMap(this.map);
-
-      // Add custom markers for tracking history
-      this.addTrackingMarkers();
-
-      // Calculate and display route
-      this.calculateRoute();
-
-    } catch (error) {
-      console.error('Error initializing Google Maps:', error);
-    }
-  }
-
-  private addTrackingMarkers() {
-    this.clearMarkers();
-
-    this.history.forEach((event, index) => {
-      if (event.coordinates) {
-        const marker = new google.maps.Marker({
-          position: event.coordinates,
-          map: this.map,
-          title: `${event.status} - ${event.location}`,
-          icon: this.getMarkerIcon(event.status, index === this.history.length - 1),
-          animation: index === this.history.length - 1 ? google.maps.Animation.BOUNCE : null
-        });
-
-        const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px;">
-              <h4 style="margin: 0 0 8px 0; color: #333;">${event.status}</h4>
-              <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">${event.date}</p>
-              <p style="margin: 0; font-size: 12px; color: #666;">${event.location}</p>
-            </div>
-          `
-        });
-
-        marker.addListener('click', () => {
-          infoWindow.open(this.map, marker);
-        });
-
-        this.markers.push(marker);
-      }
-    });
-  }
-
-  private getMarkerIcon(status: string, isLatest: boolean) {
-    const baseUrl = 'https://maps.google.com/mapfiles/ms/icons/';
-    
-    if (isLatest) {
-      return `${baseUrl}green-dot.png`; // Current location
-    }
-    
-    switch (status.toLowerCase()) {
-      case 'order created':
-      case 'created':
-        return `${baseUrl}blue-dot.png`;
-      case 'picked up':
-      case 'package picked up':
-        return `${baseUrl}yellow-dot.png`;
-      case 'in transit':
-        return `${baseUrl}orange-dot.png`;
-      case 'out for delivery':
-        return `${baseUrl}purple-dot.png`;
-      case 'delivered':
-        return `${baseUrl}green-dot.png`;
-      default:
-        return `${baseUrl}red-dot.png`;
-    }
-  }
-
-  private calculateRoute() {
-    if (!this.directionsService || !this.pickupCoordinates || !this.deliveryCoordinates) {
-      return;
-    }
-
-    const request = {
-      origin: this.pickupCoordinates,
-      destination: this.deliveryCoordinates,
-      travelMode: google.maps.TravelMode.DRIVING,
-      unitSystem: google.maps.UnitSystem.METRIC,
-      avoidHighways: false,
-      avoidTolls: false
-    };
-
-    this.directionsService.route(request, (result: any, status: any) => {
-      if (status === google.maps.DirectionsStatus.OK) {
-        this.directionsRenderer.setDirections(result);
+      // Mock tracking logic with real places
+      if (this.trackingNumber === 'SEND123456') {
+        this.found = true;
+        this.status = 'In Transit';
         
-        // Extract route information
-        const route = result.routes[0];
-        const leg = route.legs[0];
+        // Real place names for Kenya
+        this.pickupLocation = 'KICC, Nairobi, Kenya';
+        this.deliveryLocation = 'Fort Jesus, Mombasa, Kenya';
+        this.currentLocation = 'Nakuru Town, Kenya';
         
-        this.routeInfo = {
-          distance: leg.distance.text,
-          duration: leg.duration.text
-        };
+        // Geocode the places to get coordinates
+        this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
+        this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
+        this.currentCoordinates = await this.geocodePlace(this.currentLocation);
+
+        this.history = [
+          { date: '2024-01-20', status: 'Created', location: this.pickupLocation },
+          { date: '2024-01-21', status: 'Picked Up', location: this.pickupLocation },
+          { date: '2024-01-22', status: 'In Transit', location: this.currentLocation },
+          { date: '2024-01-23', status: 'Out for Delivery', location: 'Near ' + this.deliveryLocation }
+        ];
+
+        await this.updateMap();
         
-        // Fit map to show entire route
-        this.map.fitBounds(route.bounds);
+      } else if (this.trackingNumber === 'SEND789012') {
+        // Another example with different locations
+        this.found = true;
+        this.status = 'Delivered';
+        
+        this.pickupLocation = 'University of Nairobi, Kenya';
+        this.deliveryLocation = 'Kenyatta University, Kenya';
+        this.currentLocation = this.deliveryLocation;
+        
+        this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
+        this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
+        this.currentCoordinates = this.deliveryCoordinates;
+
+        this.history = [
+          { date: '2024-01-18', status: 'Created', location: this.pickupLocation },
+          { date: '2024-01-19', status: 'Picked Up', location: this.pickupLocation },
+          { date: '2024-01-19', status: 'Out for Delivery', location: 'En route to ' + this.deliveryLocation },
+          { date: '2024-01-20', status: 'Delivered', location: this.deliveryLocation }
+        ];
+
+        await this.updateMap();
         
       } else {
-        console.error('Directions request failed due to ' + status);
+        this.found = false;
+        this.status = '';
+        this.history = [];
+        this.pickupCoordinates = null;
+        this.deliveryCoordinates = null;
+        this.currentCoordinates = null;
+        this.mapLayers = [];
       }
-    });
+    } catch (error) {
+      console.error('Error tracking parcel:', error);
+    } finally {
+      this.loading = false;
+    }
   }
 
-  private clearMarkers() {
-    this.markers.forEach(marker => marker.setMap(null));
-    this.markers = [];
+  async updateMap() {
+    this.mapLayers = [];
+    
+    if (this.pickupCoordinates && this.deliveryCoordinates) {
+      // Create custom icons
+      const pickupIcon = icon({
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      const deliveryIcon = icon({
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // Add pickup marker
+      const pickupMarker = marker([this.pickupCoordinates.lat, this.pickupCoordinates.lng], {
+        icon: pickupIcon
+      }).bindPopup(`<strong>Pickup Location</strong><br>${this.pickupLocation}`);
+
+      // Add delivery marker
+      const deliveryMarker = marker([this.deliveryCoordinates.lat, this.deliveryCoordinates.lng], {
+        icon: deliveryIcon
+      }).bindPopup(`<strong>Delivery Location</strong><br>${this.deliveryLocation}`);
+
+      this.mapLayers.push(pickupMarker, deliveryMarker);
+
+      // Add current location marker if different from pickup/delivery
+      if (this.currentCoordinates && 
+          this.status === 'In Transit' &&
+          (this.currentCoordinates.lat !== this.pickupCoordinates.lat || 
+           this.currentCoordinates.lng !== this.pickupCoordinates.lng) &&
+          (this.currentCoordinates.lat !== this.deliveryCoordinates.lat || 
+           this.currentCoordinates.lng !== this.deliveryCoordinates.lng)) {
+        
+        const currentIcon = icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+
+        const currentMarker = marker([this.currentCoordinates.lat, this.currentCoordinates.lng], {
+          icon: currentIcon
+        }).bindPopup(`<strong>Current Location</strong><br>${this.currentLocation}`);
+
+        this.mapLayers.push(currentMarker);
+      }
+
+      // Add route line
+      const routePoints: [number, number][] = [
+        [this.pickupCoordinates.lat, this.pickupCoordinates.lng]
+      ];
+
+      if (this.currentCoordinates && this.status === 'In Transit') {
+        routePoints.push([this.currentCoordinates.lat, this.currentCoordinates.lng]);
+      }
+
+      routePoints.push([this.deliveryCoordinates.lat, this.deliveryCoordinates.lng]);
+
+      const routeLine = polyline(routePoints, {
+        color: '#3388ff',
+        weight: 4,
+        opacity: 0.7,
+        dashArray: this.status === 'Delivered' ? undefined : '10, 10'
+      });
+
+      this.mapLayers.push(routeLine);
+
+      // Fit map to show all markers
+      const bounds = new LatLngBounds([]);
+      bounds.extend([this.pickupCoordinates.lat, this.pickupCoordinates.lng]);
+      bounds.extend([this.deliveryCoordinates.lat, this.deliveryCoordinates.lng]);
+      if (this.currentCoordinates) {
+        bounds.extend([this.currentCoordinates.lat, this.currentCoordinates.lng]);
+      }
+
+      // Update map options to fit bounds
+      this.mapOptions = {
+        ...this.mapOptions,
+        center: bounds.getCenter(),
+        zoom: 8
+      };
+    }
+  }
+
+  // Helper method to search for places (you can use this for autocomplete)
+  async searchPlaces(query: string): Promise<NominatimResponse[]> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=ke`;
+      const response = await this.http.get<NominatimResponse[]>(url).toPromise();
+      return response || [];
+    } catch (error) {
+      console.error('Search error:', error);
+      return [];
+    }
   }
 }
