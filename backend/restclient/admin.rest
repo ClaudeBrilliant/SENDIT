@@ -1,0 +1,68 @@
+### Create Parcel (Admin)
+POST http://localhost:3000/admin/parcels
+Content-Type: application/json
+
+{
+  "senderId": "{{sender_id}}",
+  "receiverId": "{{receiver_id}}",
+  "weight": 2.5,
+  "price": 100,
+  "pickupLocationId": "{{pickup_location_id}}",
+  "deliveryLocationId": "{{delivery_location_id}}",
+  "currentStatusId": "{{status_id}}"
+}
+
+### Assign Courier
+PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/assign-courier
+Content-Type: application/json
+
+{
+  "courierId": "{{courier_id}}"
+}
+
+### Update Parcel Status (Admin)
+PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/status
+Content-Type: application/json
+
+{
+  "currentStatusId": "{{status_id}}"
+}
+
+### List Parcels
+GET http://localhost:3000/admin/parcels
+
+### List Users
+GET http://localhost:3000/admin/users
+
+### List Couriers
+GET http://localhost:3000/admin/couriers 
+
+### Get User By ID (Admin)
+GET http://localhost:3000/admin/users/{{user_id}}
+
+### Update User (Admin)
+PATCH http://localhost:3000/admin/users/{{user_id}}
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "email": "updated@example.com"
+}
+
+### Delete User (Admin)
+DELETE http://localhost:3000/admin/users/{{user_id}}
+
+### Get Parcel By ID (Admin)
+GET http://localhost:3000/admin/parcels/{{parcel_id}}
+
+### Update Parcel (Admin)
+PATCH http://localhost:3000/admin/parcels/{{parcel_id}}
+Content-Type: application/json
+
+{
+  "weight": 3.0,
+  "price": 120
+}
+
+### Delete Parcel (Admin)
+DELETE http://localhost:3000/admin/parcels/{{parcel_id}} 

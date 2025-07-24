@@ -1,0 +1,5 @@
+### Get User Notifications
+GET http://localhost:3000/notifications?userId={{user_id}}
+
+### Mark Notification as Read
+PATCH http://localhost:3000/notifications/{{notification_id}}/read 

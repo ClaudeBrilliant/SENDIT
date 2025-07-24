@@ -1,0 +1,11 @@
+### Get Assigned Parcels (Courier)
+GET http://localhost:3000/courier/assigned?courierId={{courier_id}}
+
+### Update Parcel Location/Status (Courier)
+PATCH http://localhost:3000/courier/parcels/{{parcel_id}}/location
+Content-Type: application/json
+
+{
+  "location": "Nairobi, Kenya",
+  "currentStatusId": "IN_TRANSIT"
+} 

@@ -1,0 +1,5 @@
+### Get User By ID
+GET http://localhost:3000/users/{{user_id}}
+
+### List Users
+GET http://localhost:3000/users 

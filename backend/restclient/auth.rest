@@ -1,0 +1,31 @@
+### Register
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "TestPass123!",
+  "role": "USER"
+}
+
+### Login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "TestPass123!"
+}
+
+### Get Profile
+GET http://localhost:3000/auth/profile
+Authorization: Bearer {{access_token}}
+
+### Refresh Token
+POST http://localhost:3000/auth/refresh
+Authorization: Bearer {{access_token}}
+
+### Validate Token
+POST http://localhost:3000/auth/validate
+Authorization: Bearer {{access_token}} 

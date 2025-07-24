@@ -1,0 +1,33 @@
+### Create Parcel
+POST http://localhost:3000/parcels
+Content-Type: application/json
+
+{
+  "senderId": "{{sender_id}}",
+  "receiverId": "{{receiver_id}}",
+  "weight": 2.5,
+  "price": 100,
+  "pickupLocationId": "{{pickup_location_id}}",
+  "deliveryLocationId": "{{delivery_location_id}}",
+  "currentStatusId": "{{status_id}}"
+}
+
+### Get Sent Parcels
+GET http://localhost:3000/parcels/sent?userId={{user_id}}
+
+### Get Received Parcels
+GET http://localhost:3000/parcels/received?userId={{user_id}}
+
+### Get Assigned Parcels (Courier)
+GET http://localhost:3000/parcels/assigned?courierId={{courier_id}}
+
+### Get Parcel By ID
+GET http://localhost:3000/parcels/{{parcel_id}}
+
+### Update Parcel Status
+PATCH http://localhost:3000/parcels/{{parcel_id}}/status
+Content-Type: application/json
+
+{
+  "currentStatusId": "{{status_id}}"
+} 
