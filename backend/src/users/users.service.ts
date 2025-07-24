@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
-export type User = NonNullable<Awaited<ReturnType<PrismaClient['user']['findUnique']>>>;
+export type User = NonNullable<
+  Awaited<ReturnType<PrismaClient['user']['findUnique']>>
+>;
 
 @Injectable()
 export class UsersService {
@@ -23,18 +27,18 @@ export class UsersService {
   async create(data: {
     name: string;
     email: string;
-    phone?: string;
+    phone: string; // <-- Remove the "?" to make it required
     password: string;
   }): Promise<User> {
     const hashedPassword = await bcrypt.hash(data.password, 10);
+    const [firstName, ...rest] = data.name.split(' ');
     return this.prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
-        firstName: data.name.split(' ')[0],
-        lastName: data.name.split(' ').slice(1).join(' '),
-        fullName: data.name,
-        phoneNumber: data.phone,
+        firstName,
+        lastName: rest.join(' '),
+        phone: data.phone, // always defined
       },
     });
   }
@@ -44,13 +48,21 @@ export class UsersService {
     return this.prisma.parcel.findMany({ where: { courierId } });
   }
 
-  async updateParcelLocation(parcelId: string, location: string, statusId: string) {
-    // Update parcel's current status and add a tracking entry
+  async updateParcelLocation(
+    parcelId: string,
+    location: string,
+    currentStatusId: string,
+  ) {
     const updatedParcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      data: { currentStatusId: statusId },
+      data: { currentStatusId }, // <-- fixed field name
     });
-    // Use valid tracking logic as per the schema
+    await this.prisma.parcelTracking.create({
+      data: {
+        parcelId,
+        location,
+      },
+    });
     return updatedParcel;
   }
 }
