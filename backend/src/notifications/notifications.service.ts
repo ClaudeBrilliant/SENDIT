@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
 import { PrismaClient, NotificationType } from '@prisma/client';
 import { MailerService } from 'src/shared/utils/mailer/mailer.service';
