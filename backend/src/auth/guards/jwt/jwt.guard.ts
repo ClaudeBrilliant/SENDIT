@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Injectable,
   CanActivate,
@@ -8,6 +9,7 @@ import {
 import { Request } from 'express';
 import { JwtService } from '../../../shared/utils/jwt.service';
 import { UsersService } from '../../../users/users.service';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -28,10 +30,10 @@ export class JwtAuthGuard implements CanActivate {
       const token = this.jwtService.extractTokenFromHeader(authHeader);
       const payload = this.jwtService.verifyToken(token);
 
-      // Verify user still exists and is active
+      // Get user from DB
       const user = await this.usersService.findOne(payload.sub);
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('User not found or inactive');
+      if (!user) {
+        throw new UnauthorizedException('User not found');
       }
 
       // Attach user to request
@@ -39,7 +41,7 @@ export class JwtAuthGuard implements CanActivate {
         id: user.id,
         email: user.email,
         role: user.role,
-        name: user.fullName,
+        name: `${user.firstName} ${user.lastName}`,
       };
 
       return true;
@@ -49,4 +51,10 @@ export class JwtAuthGuard implements CanActivate {
       );
     }
   }
+}
+
+export class User {
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
 }

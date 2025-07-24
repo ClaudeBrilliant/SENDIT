@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -47,7 +48,7 @@ export class ResourceOwnerGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    const resourceId = parseInt(request.params.id, 10);
+    const resourceId = request.params.id;
     if (!resourceId) {
       throw new NotFoundException('Resource ID not found');
     }
@@ -58,23 +59,38 @@ export class ResourceOwnerGuard implements CanActivate {
       ownerField,
     );
 
-    return true;
+    // Only allow if user is owner or has permission
+    if (
+      user.role === 'ADMIN' ||
+      (ownerId &&
+        ownerId === user.id &&
+        this.permissionService.canPerformAction(
+          user.role,
+          resourceAction.action,
+          resourceAction.resource,
+        ))
+    ) {
+      return true;
+    }
+
+    throw new ForbiddenException('You do not have access to this resource');
   }
 
   private async getResourceOwnerId(
     resource: Resource,
-    resourceId: number,
+    resourceId: string,
     ownerField: string,
-  ): Promise<number> {
+  ): Promise<string | null> {
     switch (resource) {
       case Resource.USER:
         return resourceId;
-
-      case Resource.BOOKING:
-        return resourceId;
-
+      case Resource.PARCEL:
+        // Example: fetch the parcel and return the ownerId (senderId)
+        // You may need to inject a ParcelsService for this
+        // return (await this.parcelsService.findById(resourceId))?.senderId ?? null;
+        return null; // Implement as needed
       default:
-        return resourceId;
+        return null;
     }
   }
 }
