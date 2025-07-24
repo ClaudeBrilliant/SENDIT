@@ -1,3 +1,11 @@
+@sender_id = {sendr_id}
+@receiver_id = {receiver_id}
+@pickup_location_id = {pickup_location_id}
+@delivery_location_id = {delivery_location_id}
+@status_id = {status_id}
+@parcel_id = {parcel_id}
+@courier_id = {courier_id}
+
 ### Create Parcel (Admin)
 POST http://localhost:3000/admin/parcels
 Content-Type: application/json
