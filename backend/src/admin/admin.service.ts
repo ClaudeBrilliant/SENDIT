@@ -1,6 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { MailerService, ParcelInfo } from '../shared/utils/mailer/mailer.service';
+import { PrismaClient, NotificationType } from '@prisma/client';
+import {
+  MailerService,
+  ParcelInfo,
+} from '../shared/utils/mailer/mailer.service';
 
 @Injectable()
 export class AdminService {
@@ -10,35 +16,63 @@ export class AdminService {
 
   // Create a new parcel
   async createParcel(data: any) {
-    const parcel = await this.prisma.parcel.create({ data });
-    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId } });
+    const parcel = await this.prisma.parcel.create({
+      data,
+      include: {
+        pickupLocation: true,
+        deliveryLocation: true,
+      },
+    });
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: parcel.receiverId },
+    });
     if (receiver) {
       const parcelInfo: ParcelInfo = {
         trackingNumber: parcel.id,
-        pickupLocation: parcel.pickupAddress,
-        deliveryLocation: parcel.destAddress,
+        pickupLocation: parcel.pickupLocation.address,
+        deliveryLocation: parcel.deliveryLocation.address,
       };
-      await this.mailerService.sendOrderCreatedEmail(receiver.email, parcelInfo);
+      await this.mailerService.sendOrderCreatedEmail(
+        receiver.email,
+        parcelInfo,
+      );
     }
     return parcel;
   }
 
-  // Update parcel status (using 'status' field)
-  async updateParcelStatus(parcelId: string, status: string) {
+  // Update parcel status
+  async updateParcelStatus(parcelId: string, statusId: string) {
     const parcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      data: { status: status as any }, // TODO: Replace 'as any' with the correct DeliveryStatus enum if available
+      data: { currentStatusId: statusId },
+      include: {
+        pickupLocation: true,
+        deliveryLocation: true,
+      },
     });
-    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId } });
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: parcel.receiverId },
+    });
     if (receiver) {
       const parcelInfo: ParcelInfo = {
         trackingNumber: parcel.id,
-        pickupLocation: parcel.pickupAddress,
-        deliveryLocation: parcel.destAddress,
+        pickupLocation: parcel.pickupLocation.address,
+        deliveryLocation: parcel.deliveryLocation.address,
       };
-      await this.mailerService.sendStatusUpdateEmail(receiver.email, parcelInfo, status);
-      if (status.toLowerCase() === 'delivered') {
-        await this.mailerService.sendDeliveryNotification(receiver.email, parcelInfo);
+      await this.mailerService.sendStatusUpdateEmail(
+        receiver.email,
+        parcelInfo,
+        statusId,
+      );
+      // Optionally, fetch the DeliveryStatus to check the status string
+      const statusObj = await this.prisma.deliveryStatus.findUnique({
+        where: { id: statusId },
+      });
+      if (statusObj && statusObj.status.toLowerCase() === 'delivered') {
+        await this.mailerService.sendDeliveryNotification(
+          receiver.email,
+          parcelInfo,
+        );
       }
     }
     return parcel;
@@ -47,10 +81,10 @@ export class AdminService {
   // List all parcels
   async listParcels() {
     return this.prisma.parcel.findMany({
-      // Removed invalid include: pickupLocation
       include: {
         sender: true,
         receiver: true,
+        pickupLocation: true,
         deliveryLocation: true,
         currentStatus: true,
       },
@@ -64,7 +98,9 @@ export class AdminService {
 
   // List all couriers
   async listCouriers() {
-    // Removed role-based query
+    return this.prisma.user.findMany({
+      where: { role: 'COURIER' },
+    });
   }
 
   // Get user by ID
@@ -84,7 +120,16 @@ export class AdminService {
 
   // Get parcel by ID
   async getParcelById(parcelId: string) {
-    return this.prisma.parcel.findUnique({ where: { id: parcelId } });
+    return this.prisma.parcel.findUnique({
+      where: { id: parcelId },
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true,
+        currentStatus: true,
+      },
+    });
   }
 
   // Update parcel
@@ -95,5 +140,16 @@ export class AdminService {
   // Delete parcel
   async deleteParcel(parcelId: string) {
     return this.prisma.parcel.delete({ where: { id: parcelId } });
+  }
+
+  // Create a notification
+  async createNotification(userId: string, message: string) {
+    return this.prisma.notification.create({
+      data: {
+        userId,
+        type: NotificationType.EMAIL, // or SMS or PUSH
+        content: message,
+      },
+    });
   }
 }

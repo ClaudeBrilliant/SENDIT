@@ -1,4 +1,12 @@
-import { Controller, Post, Patch, Get, Delete, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Patch,
+  Get,
+  Delete,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 
 @Controller('admin')
@@ -10,10 +18,12 @@ export class AdminController {
     return this.adminService.createParcel(data);
   }
 
-  // assignCourier endpoint removed: AdminService does not have this method.
-
   @Patch('parcels/:id/status')
-  async updateParcelStatus(@Param('id') parcelId: string, @Body('statusId') statusId: string) {
+  async updateParcelStatus(
+    @Param('id') parcelId: string,
+    @Body('statusId') statusId: string,
+  ) {
+    // statusId is a string (the DeliveryStatus id), pass directly
     return this.adminService.updateParcelStatus(parcelId, statusId);
   }
 
@@ -32,37 +42,31 @@ export class AdminController {
     return this.adminService.listCouriers();
   }
 
-  // Get user by ID
   @Get('users/:id')
   async getUserById(@Param('id') userId: string) {
     return this.adminService.getUserById(userId);
   }
 
-  // Update user
   @Patch('users/:id')
   async updateUser(@Param('id') userId: string, @Body() data: any) {
     return this.adminService.updateUser(userId, data);
   }
 
-  // Delete user
   @Delete('users/:id')
   async deleteUser(@Param('id') userId: string) {
     return this.adminService.deleteUser(userId);
   }
 
-  // Get parcel by ID
   @Get('parcels/:id')
   async getParcelById(@Param('id') parcelId: string) {
     return this.adminService.getParcelById(parcelId);
   }
 
-  // Update parcel
   @Patch('parcels/:id')
   async updateParcel(@Param('id') parcelId: string, @Body() data: any) {
     return this.adminService.updateParcel(parcelId, data);
   }
 
-  // Delete parcel
   @Delete('parcels/:id')
   async deleteParcel(@Param('id') parcelId: string) {
     return this.adminService.deleteParcel(parcelId);
