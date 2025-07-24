@@ -6,8 +6,9 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
-  IsOptional,
   IsPhoneNumber,
+  MaxLength,
+  Matches,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -33,9 +34,9 @@ export class RegisterDto {
   })
   password: string;
 
-  @IsOptional()
   @IsString({ message: 'Phone must be a string' })
+  @IsNotEmpty({ message: 'Phone is required' })
   @IsPhoneNumber(undefined, { message: 'Please provide a valid phone number' })
   @Transform(({ value }) => value?.trim())
-  phone?: string;
+  phone: string;
 }
