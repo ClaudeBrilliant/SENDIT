@@ -3,39 +3,49 @@ import { Injectable } from '@nestjs/common';
 import { Permission } from '../enums/permissions.enum';
 import { Resource } from '../enums/resources.enum';
 import { Action } from '../enums/actions.enum';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class PermissionService {
-  canPerformAction(
-    role: Role,
-    action: Action,
-    resource: Resource,
-  ): boolean {
+  canPerformAction(role: Role, action: Action, resource: Resource): boolean {
     const permission = this.getPermissionForAction(action, resource);
     return permission ? this.hasPermission(role, permission) : false;
   }
 
   getRolePermissions(role: Role): Permission[] {
-    return [];
+    // Example: define permissions for each role
+    switch (role) {
+      case 'ADMIN':
+        return Object.values(Permission);
+      case 'COURIER':
+        return [
+          Permission.READ_PARCEL,
+          Permission.UPDATE_PARCEL_STATUS,
+          Permission.TRACK_PARCEL,
+        ];
+      case 'USER':
+      default:
+        return [
+          Permission.CREATE_PARCEL,
+          Permission.READ_PARCEL,
+          Permission.TRACK_PARCEL,
+        ];
+    }
   }
 
   canAccessOwnResource(
     role: Role,
     action: Action,
     resource: Resource,
-    ownerId: number,
-    requesterId: number,
+    ownerId: string,
+    requesterId: string,
   ): boolean {
-    if (role === "ADMIN") {
+    if (role === 'ADMIN') {
       return this.canPerformAction(role, action, resource);
     }
-
     if (ownerId === requesterId) {
       return this.canPerformAction(role, action, resource);
     }
-
-    // STAFF role not present in Role enum; skip this check
-
     return false;
   }
 
@@ -46,6 +56,10 @@ export class PermissionService {
     const permissionKey =
       `${action.toUpperCase()}_${resource.toUpperCase()}` as keyof typeof Permission;
     return Permission[permissionKey] || null;
+  }
+
+  hasPermission(role: Role, permission: Permission): boolean {
+    return this.getRolePermissions(role).includes(permission);
   }
 
   hasAnyPermission(role: Role, permissions: Permission[]): boolean {
