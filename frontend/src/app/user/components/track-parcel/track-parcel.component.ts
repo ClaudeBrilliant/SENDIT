@@ -271,9 +271,9 @@ export class TrackParcelComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    throw new Error('Method not implemented.');
+    // No-op for now. Implement map initialization here if needed.
   }
   ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
+    // No-op for now. Clean up map resources here if needed.
   }
 }
