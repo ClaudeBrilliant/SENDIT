@@ -48,7 +48,7 @@ export class AuthService {
 
       try {
         await this.mailerService.sendWelcomeEmail(user.email, {
-          name: user.fullName,
+          name: `${user.firstName} ${user.lastName}`,
           email: user.email,
         });
       } catch (emailError) {
@@ -70,7 +70,7 @@ export class AuthService {
         access_token,
         user: {
           id: user.id,
-          name: user.fullName,
+          name: `${user.firstName} ${user.lastName}`,
           email: user.email,
         },
       };
@@ -87,7 +87,6 @@ export class AuthService {
       if (!user || !user.password) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      console.log(user);
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(
@@ -96,10 +95,6 @@ export class AuthService {
       );
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
-      }
-
-      if (!user.isActive) {
-        throw new UnauthorizedException('Account is deactivated');
       }
 
       // Generate JWT token
@@ -114,7 +109,7 @@ export class AuthService {
         access_token,
         user: {
           id: user.id,
-          name: user.fullName,
+          name: `${user.firstName} ${user.lastName}`,
           email: user.email,
         },
       };
@@ -131,14 +126,14 @@ export class AuthService {
       const payload = this.jwtService.verifyToken(token);
       const user = await this.usersService.findOne(payload.sub);
 
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('User not found or inactive');
+      if (!user) {
+        throw new UnauthorizedException('User not found');
       }
 
       return {
         id: user.id,
         email: user.email,
-        name: user.fullName,
+        name: `${user.firstName} ${user.lastName}`,
       };
     } catch {
       throw new UnauthorizedException('Invalid token');
@@ -150,8 +145,8 @@ export class AuthService {
       const payload = this.jwtService.verifyToken(token);
       const user = await this.usersService.findOne(payload.sub);
 
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('User not found or inactive');
+      if (!user) {
+        throw new UnauthorizedException('User not found');
       }
 
       const newPayload: JwtPayload = {

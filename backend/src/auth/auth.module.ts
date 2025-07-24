@@ -9,7 +9,6 @@ import { RolesGuard } from './guards/roles/roles.guard';
 import { PermissionGuard } from './guards/permission/permission.guard';
 import { ResourceActionGuard } from './guards/resource-action/resource-action.guard';
 import { ResourceOwnerGuard } from './guards/resource-owner/resource-owner.guard';
-import { OptionalAuthGuard } from './guards/optional-auth/optional-auth.guard';
 import { PermissionService } from './services/permission.service';
 import { PermissionController } from './controllers/permission.controller';
 import { MailerService } from 'src/shared/utils/mailer/mailer.service';
@@ -25,7 +24,6 @@ import { MailerService } from 'src/shared/utils/mailer/mailer.service';
     PermissionGuard,
     ResourceActionGuard,
     ResourceOwnerGuard,
-    OptionalAuthGuard,
     MailerService,
   ],
   controllers: [AuthController, PermissionController],
@@ -38,7 +36,6 @@ import { MailerService } from 'src/shared/utils/mailer/mailer.service';
     PermissionGuard,
     ResourceActionGuard,
     ResourceOwnerGuard,
-    OptionalAuthGuard,
   ],
 })
 export class AuthModule {}
