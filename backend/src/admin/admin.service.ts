@@ -1,18 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaClient, NotificationType } from '@prisma/client';
 import {
   MailerService,
   ParcelInfo,
 } from '../shared/utils/mailer/mailer.service';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AdminService {
   private prisma = new PrismaClient();
 
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    private readonly mailerService: MailerService,
+    private prismaService: PrismaService,
+  ) {}
 
   // Create a new parcel
   async createParcel(data: any) {
@@ -151,5 +155,45 @@ export class AdminService {
         content: message,
       },
     });
+  }
+
+  async registerAdmin(dto: CreateAdminDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existing) throw new ConflictException('Email already in use');
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    return this.prisma.user.create({
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+        password: hashedPassword,
+        phone: dto.phone,
+        role: 'ADMIN',
+      },
+    });
+  }
+
+  // Parcels
+  async getAllParcels() {
+    return this.prisma.parcel.findMany();
+  }
+
+  async assignCourier(parcelId: string, courierId: string) {
+    return this.prisma.parcel.update({
+      where: { id: parcelId },
+      data: { courierId },
+    });
+  }
+
+  // Users
+  async getAllUsers() {
+    return this.prisma.user.findMany();
+  }
+
+  // Couriers
+  async getAllCouriers() {
+    return this.prisma.user.findMany({ where: { role: 'COURIER' } });
   }
 }
