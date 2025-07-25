@@ -4,10 +4,10 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "name": "Test User",
-  "email": "testuser@example.com",
-  "password": "TestPass123!",
-  "role": "USER"
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "StrongPassword123!",
+  "phone": "+254712345678"
 }
 
 ### Login

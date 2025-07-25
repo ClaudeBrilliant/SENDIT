@@ -20,20 +20,12 @@ Content-Type: application/json
   "currentStatusId": "{{status_id}}"
 }
 
-### Assign Courier
-PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/assign-courier
-Content-Type: application/json
-
-{
-  "courierId": "{{courier_id}}"
-}
-
 ### Update Parcel Status (Admin)
 PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/status
 Content-Type: application/json
 
 {
-  "currentStatusId": "{{status_id}}"
+  "statusId": "{{status_id}}"
 }
 
 ### List Parcels
