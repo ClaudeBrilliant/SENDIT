@@ -10,6 +10,7 @@ import { AboutComponent } from './shared/components/about/about.component';
 import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
 import { ProfileComponent } from './user/components/profile/profile.component';
 import { TrackParcelComponent } from './user/components/track-parcel/track-parcel.component';
+import { CourierGuard } from './courier/courier.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -26,6 +27,11 @@ export const routes: Routes = [
   { path: 'user/dashboard', component: UserDashboardComponent },
   { path: 'user/profile', component: ProfileComponent },
   { path: 'track-parcel', component: TrackParcelComponent },
+  {
+    path: 'courier/dashboard',
+    loadComponent: () => import('./courier/components/dashboard/courier-dashboard.component').then(m => m.CourierDashboardComponent),
+    canActivate: [CourierGuard], // Assume you have a CourierGuard for role-based access
+  },
   {
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
