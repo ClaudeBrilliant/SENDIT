@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AdminService } from '../../services/admin.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,30 +12,17 @@ import { FormsModule } from '@angular/forms';
 })
 export class AdminTrackParcelComponent {
   trackingNumber = '';
-  found = false;
-  status = '';
-  history: { date: string, status: string }[] = [];
-  pickupCoordinates: { lat: number, lng: number } | null = null;
-  deliveryCoordinates: { lat: number, lng: number } | null = null;
+  parcel: any = null;
+  loading = false;
 
-  track() {
-    // Mock tracking logic for admin
-    if (this.trackingNumber === 'SEND123456') {
-      this.found = true;
-      this.status = 'In Transit';
-      this.history = [
-        { date: '2024-01-20', status: 'Created' },
-        { date: '2024-01-21', status: 'Picked Up' },
-        { date: '2024-01-22', status: 'In Transit' }
-      ];
-      this.pickupCoordinates = { lat: -1.286389, lng: 36.817223 }; // Nairobi
-      this.deliveryCoordinates = { lat: -0.091702, lng: 34.767956 }; // Kisumu
-    } else {
-      this.found = false;
-      this.status = '';
-      this.history = [];
-      this.pickupCoordinates = null;
-      this.deliveryCoordinates = null;
-    }
+  constructor(private adminService: AdminService) {}
+
+  trackParcel() {
+    if (!this.trackingNumber) return;
+    this.loading = true;
+    this.adminService.trackParcel(this.trackingNumber).subscribe(data => {
+      this.parcel = data;
+      this.loading = false;
+    });
   }
 } 

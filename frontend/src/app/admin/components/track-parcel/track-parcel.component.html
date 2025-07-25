@@ -1,30 +1,18 @@
 <div class="admin-track-parcel-container">
   <h2 style="color: #FB9F3E;">Admin Track Parcel</h2>
-  <form (ngSubmit)="track()" class="track-form">
+  <form (ngSubmit)="trackParcel()" class="track-form">
     <input type="text" [(ngModel)]="trackingNumber" name="trackingNumber" placeholder="Enter tracking number" required>
-    <button class="btn btn-primary" type="submit" style="background-color: #FB9F3E; color: white;">Track</button>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">
+      <span *ngIf="loading">Loading...</span>
+      <span *ngIf="!loading">Track</span>
+    </button>
   </form>
-  <div *ngIf="found" class="status-section">
-    <h3>Status: <span class="status-value" style="color: #FB9F3E;">{{status}}</span></h3>
-    <div class="timeline">
-      <div class="timeline-item" *ngFor="let event of history">
-        <div class="timeline-date">{{event.date}}</div>
-        <div class="timeline-status">{{event.status}}</div>
-      </div>
-    </div>
-    <div class="map-section" *ngIf="pickupCoordinates && deliveryCoordinates">
-      <h4>Route Map</h4>
-      <iframe
-        width="100%"
-        height="300"
-        frameborder="0"
-        style="border:0;border-radius:12px;"
-        [src]="'https://www.google.com/maps/embed/v1/directions?key=YOUR_GOOGLE_MAPS_API_KEY&origin=' + pickupCoordinates.lat + ',' + pickupCoordinates.lng + '&destination=' + deliveryCoordinates.lat + ',' + deliveryCoordinates.lng"
-        allowfullscreen>
-      </iframe>
-    </div>
+
+  <div *ngIf="parcel">
+    <h3>Parcel Details</h3>
+    <pre>{{ parcel | json }}</pre>
   </div>
-  <div *ngIf="!found && trackingNumber">
-    <p class="not-found">No parcel found for this tracking number.</p>
+  <div *ngIf="!parcel && !loading && trackingNumber">
+    <p>No parcel found for tracking number: <strong>{{trackingNumber}}</strong></p>
   </div>
 </div> 

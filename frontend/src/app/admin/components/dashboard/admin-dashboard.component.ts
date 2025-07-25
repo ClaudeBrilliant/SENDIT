@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AnalyticsComponent } from "../analytics/analytics.component";
+import { AdminService } from '../../services/admin.service';
+import { ParcelsComponent } from '../parcels/parcels.component';
+import { AnalyticsComponent } from '../analytics/analytics.component';
+import { SettingsComponent } from '../settings/settings.component';
 import { AdminTrackParcelComponent } from '../track-parcel/track-parcel.component';
 import { LogsComponent } from '../logs/logs.component';
-import { SettingsComponent } from '../settings/settings.component';
-import { ParcelsComponent } from '../parcels/parcels.component';
 
 export interface ParcelStats {
   total: number;
@@ -43,110 +44,45 @@ export interface User {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, AnalyticsComponent, AdminTrackParcelComponent, LogsComponent, SettingsComponent, ParcelsComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ParcelsComponent,
+    AnalyticsComponent,
+    SettingsComponent,
+    AdminTrackParcelComponent,
+    LogsComponent
+  ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
-  // Dashboard data
-  parcelStats: ParcelStats = {
-    total: 1247,
-    pending: 89,
-    inTransit: 156,
-    delivered: 987,
-    cancelled: 15
-  };
+  stats: any = {};
+  recentParcels: any[] = [];
+  recentUsers: any[] = [];
+  loading = true;
 
-  recentParcels: RecentParcel[] = [
-    {
-      id: '1',
-      trackingNumber: 'SND001234',
-      senderName: 'John Doe',
-      receiverName: 'Jane Smith',
-      destination: 'Nairobi, Kenya',
-      status: 'in-transit',
-      createdAt: new Date('2024-01-15'),
-      weight: 2.5,
-      amount: 1200
-    },
-    {
-      id: '2',
-      trackingNumber: 'SND001235',
-      senderName: 'Alice Johnson',
-      receiverName: 'Bob Wilson',
-      destination: 'Mombasa, Kenya',
-      status: 'pending',
-      createdAt: new Date('2024-01-16'),
-      weight: 1.2,
-      amount: 800
-    },
-    {
-      id: '3',
-      trackingNumber: 'SND001236',
-      senderName: 'Carol Brown',
-      receiverName: 'David Lee',
-      destination: 'Kisumu, Kenya',
-      status: 'delivered',
-      createdAt: new Date('2024-01-14'),
-      weight: 3.8,
-      amount: 1500
-    }
-  ];
-
-  recentUsers: User[] = [
-    {
-      id: '1',
-      name: 'Michael Johnson',
-      email: 'michael@example.com',
-      phone: '+254712345678',
-      parcelsCount: 12,
-      joinedAt: new Date('2024-01-10'),
-      status: 'active',
-      profileImage: '',
-      createdAt: new Date('2024-01-10')
-    },
-    {
-      id: '2',
-      name: 'Sarah Wilson',
-      email: 'sarah@example.com',
-      phone: '+254723456789',
-      parcelsCount: 8,
-      joinedAt: new Date('2024-01-12'),
-      status: 'active',
-      profileImage: '',
-      createdAt: new Date('2024-01-12')
-    },
-    {
-      id: '3',
-      name: 'Robert Davis',
-      email: 'robert@example.com',
-      phone: '+254734567890',
-      parcelsCount: 5,
-      joinedAt: new Date('2024-01-11'),
-      status: 'inactive',
-      profileImage: '',
-      createdAt: new Date('2024-01-11')
-    }
-  ];
-
-  // UI State
   selectedTab: string = 'overview';
   sidebarCollapsed: boolean = false;
-  notifications: number = 5;
-  searchQuery: string = '';
-  hasNotifications: boolean = true;
-  userProfileImage: string = '/assets/default-avatar.png';
-  currentUser: User = { id: '1', name: 'Admin User', email: 'admin@example.com', phone: '', parcelsCount: 0, joinedAt: new Date(), status: 'active', profileImage: '/assets/default-avatar.png', createdAt: new Date() };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private adminService: AdminService) {}
 
-  ngOnInit(): void {
-    this.loadDashboardData();
+  ngOnInit() {
+    this.fetchDashboardData();
   }
 
-  loadDashboardData(): void {
-    // Simulate API call to load dashboard data
-    console.log('Loading dashboard data...');
+  fetchDashboardData() {
+    this.loading = true;
+    this.adminService.getDashboardStats().subscribe(stats => {
+      this.stats = stats;
+      this.loading = false;
+    });
+    this.adminService.getRecentParcels().subscribe(parcels => {
+      this.recentParcels = parcels as any[];
+    });
+    this.adminService.getRecentUsers().subscribe(users => {
+      this.recentUsers = users as any[];
+    });
   }
 
   toggleSidebar(): void {
@@ -159,11 +95,11 @@ export class AdminDashboardComponent implements OnInit {
 
   onSearch(event: any): void {
     // Implement search logic if needed
-    this.searchQuery = event.target.value;
+    // this.searchQuery = event.target.value; // This line is removed
   }
 
   getPendingPercentage(): number {
-    return this.parcelStats.total ? Math.round((this.parcelStats.pending / this.parcelStats.total) * 100) : 0;
+    return this.stats.total ? Math.round((this.stats.pending / this.stats.total) * 100) : 0;
   }
 
   exportReport(): void {
@@ -173,7 +109,7 @@ export class AdminDashboardComponent implements OnInit {
 
   refreshData(): void {
     // Implement refresh logic
-    this.loadDashboardData();
+    this.fetchDashboardData();
   }
 
   trackByParcelId(index: number, parcel: RecentParcel): string {

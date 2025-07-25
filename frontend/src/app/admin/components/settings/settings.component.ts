@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AdminService } from '../../services/admin.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -9,21 +10,25 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })
-export class SettingsComponent {
-  profile = {
-    name: 'Admin User',
-    email: 'admin@example.com',
-    phone: '+254700000000'
-  };
-  notifications = {
-    email: true,
-    sms: false
-  };
-  system = {
-    darkMode: false
-  };
+export class SettingsComponent implements OnInit {
+  settings: any = {};
+  loading = true;
+  saving = false;
+
+  constructor(private adminService: AdminService) {}
+
+  ngOnInit() {
+    this.adminService.getSettings().subscribe(data => {
+      this.settings = data;
+      this.loading = false;
+    });
+  }
+
   saveSettings() {
-    // Mock save
-    alert('Settings saved!');
+    this.saving = true;
+    this.adminService.updateSettings(this.settings).subscribe(() => {
+      this.saving = false;
+      // Optionally show a success message
+    });
   }
 } 

@@ -1,34 +1,7 @@
-<div class="analytics-container">
-  <h2>Analytics & Reports</h2>
-  <div class="summary-cards">
-    <div class="summary-card" *ngFor="let item of summary">
-      <div class="summary-value">{{ item.value }}</div>
-      <div class="summary-label">{{ item.label }}</div>
-    </div>
-  </div>
-  <div class="chart-section">
-    <h3>Orders Per Month</h3>
-    <svg width="420" height="220" class="bar-chart">
-      <g *ngFor="let item of ordersPerMonth; let i = index">
-        <rect [attr.x]="i * 60 + 40" [attr.y]="200 - item.value" width="40" [attr.height]="item.value" fill="#FB9F3E" rx="6" />
-        <text [attr.x]="i * 60 + 60" y="210" text-anchor="middle" font-size="14">{{item.month}}</text>
-        <text [attr.x]="i * 60 + 60" [attr.y]="200 - item.value - 8" text-anchor="middle" font-size="12" fill="#333">{{item.value}}</text>
-      </g>
-      <line x1="30" y1="200" x2="400" y2="200" stroke="#ccc" stroke-width="2" />
-    </svg>
-  </div>
-  <div class="chart-section">
-    <h3>Order Status Distribution</h3>
-    <svg width="220" height="220" viewBox="0 0 220 220" class="pie-chart">
-      <ng-container *ngFor="let seg of getPieChartSegments()">
-        <path [attr.d]="seg.path" [attr.fill]="seg.color" stroke="#fff" stroke-width="2"></path>
-      </ng-container>
-    </svg>
-    <div class="pie-legend">
-      <div class="legend-item" *ngFor="let seg of statusDistribution">
-        <span class="legend-color" [style.background]="seg.color"></span>
-        <span class="legend-label">{{seg.label}} ({{seg.value}})</span>
-      </div>
-    </div>
-  </div>
+<div *ngIf="loading">Loading analytics...</div>
+<div *ngIf="!loading && analytics">
+  <pre>{{ analytics | json }}</pre>
+</div>
+<div *ngIf="!loading && !analytics">
+  <p>No analytics data available.</p>
 </div> 
