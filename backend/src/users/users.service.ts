@@ -3,6 +3,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { DeliveryStatusEnum } from '@prisma/client';
 
 export type User = NonNullable<
   Awaited<ReturnType<PrismaClient['user']['findUnique']>>
@@ -51,16 +52,17 @@ export class UsersService {
   async updateParcelLocation(
     parcelId: string,
     location: string,
-    currentStatusId: string,
+    currentStatus: string,
   ) {
     const updatedParcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      data: { currentStatusId }, // <-- fixed field name
+      data: { currentStatus: currentStatus as DeliveryStatusEnum },
     });
     await this.prisma.parcelTracking.create({
       data: {
         parcelId,
         location,
+        // timestamp will be set by default
       },
     });
     return updatedParcel;
