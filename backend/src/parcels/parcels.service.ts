@@ -1,18 +1,72 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { MailerService, ParcelInfo } from '../shared/utils/mailer/mailer.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  MailerService,
+  ParcelInfo,
+} from '../shared/utils/mailer/mailer.service';
+import { CreateParcelDto } from './dtos/CreateParcelDto';
 
 @Injectable()
 export class ParcelsService {
-  private prisma = new PrismaClient();
+  constructor(
+    private prisma: PrismaService,
+    private readonly mailerService: MailerService,
+  ) {}
 
-  constructor(private readonly mailerService: MailerService) {}
+  async createParcel(dto: CreateParcelDto) {
+    // Find or create pickup location by address
+    let pickupLocation = await this.prisma.location.findFirst({
+      where: { address: dto.pickupAddress },
+    });
+    if (!pickupLocation) {
+      pickupLocation = await this.prisma.location.create({
+        data: {
+          address: dto.pickupAddress,
+          label: dto.pickupAddress, // Use address as label for now
+          latitude: 0, // Replace with real coordinates if available
+          longitude: 0,
+        },
+      });
+    }
 
-  // Create a new parcel
-  async createParcel(data: any) {
-    const parcel = await this.prisma.parcel.create({ data });
+    // Find or create delivery location by address
+    let deliveryLocation = await this.prisma.location.findFirst({
+      where: { address: dto.deliveryAddress },
+    });
+    if (!deliveryLocation) {
+      deliveryLocation = await this.prisma.location.create({
+        data: {
+          address: dto.deliveryAddress,
+          label: dto.deliveryAddress, // Use address as label for now
+          latitude: 0, // Replace with real coordinates if available
+          longitude: 0,
+        },
+      });
+    }
+
+    // Find status by name
+    const status = await this.prisma.deliveryStatus.findFirst({
+      where: { status: dto.statusName },
+    });
+    if (!status) throw new NotFoundException('Status not found');
+
+    // Create the parcel using the found/created IDs
+    const parcel = await this.prisma.parcel.create({
+      data: {
+        senderId: dto.senderId,
+        receiverId: dto.receiverId,
+        courierId: dto.courierId,
+        weight: dto.weight,
+        price: dto.price,
+        pickupLocationId: pickupLocation.id,
+        deliveryLocationId: deliveryLocation.id,
+        currentStatusId: status.id,
+      },
+    });
     // Fetch receiver email and info
-    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId } });
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: parcel.receiverId },
+    });
     if (receiver) {
       const parcelInfo: ParcelInfo = {
         trackingNumber: parcel.id,
@@ -20,7 +74,10 @@ export class ParcelsService {
         pickupLocation: parcel.pickupLocationId,
         deliveryLocation: parcel.deliveryLocationId,
       };
-      await this.mailerService.sendOrderCreatedEmail(receiver.email, parcelInfo);
+      await this.mailerService.sendOrderCreatedEmail(
+        receiver.email,
+        parcelInfo,
+      );
     }
     return parcel;
   }
@@ -62,11 +119,12 @@ export class ParcelsService {
   async updateParcelStatus(parcelId: string, currentStatusId: string) {
     const parcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      // Use valid field for status update if available in schema
-      data: { currentStatusId },
+      data: { currentStatus: currentStatusId }, // statusName must be a valid DeliveryStatusEnum value
     });
     // Fetch receiver email and info
-    const receiver = await this.prisma.user.findUnique({ where: { id: parcel.receiverId } });
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: parcel.receiverId },
+    });
     if (receiver) {
       const parcelInfo: ParcelInfo = {
         trackingNumber: parcel.id,
@@ -75,10 +133,17 @@ export class ParcelsService {
         deliveryLocation: parcel.deliveryLocationId,
       };
       // Send status update email
-      await this.mailerService.sendStatusUpdateEmail(receiver.email, parcelInfo, currentStatusId);
+      await this.mailerService.sendStatusUpdateEmail(
+        receiver.email,
+        parcelInfo,
+        currentStatusId,
+      );
       // If delivered, send delivery notification
       if (currentStatusId.toLowerCase() === 'delivered') {
-        await this.mailerService.sendDeliveryNotification(receiver.email, parcelInfo);
+        await this.mailerService.sendDeliveryNotification(
+          receiver.email,
+          parcelInfo,
+        );
       }
     }
     return parcel;
