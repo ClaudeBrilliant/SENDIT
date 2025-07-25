@@ -48,16 +48,23 @@ export class NotificationsService {
     return notification;
   }
 
-  async deleteNotification(notificationId: string) {
-    return this.prisma.notification.delete({
-      where: { id: notificationId },
+  async getNotificationById(id: string) {
+    return this.prisma.notification.findUnique({ where: { id } });
+  }
+
+  async updateNotification(id: string, data: { title?: string; message?: string; type?: string }) {
+    return this.prisma.notification.update({
+      where: { id },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.message && { message: data.message }),
+        ...(data.type && { type: data.type as NotificationType }),
+      },
     });
   }
 
-  async getNotificationById(notificationId: string) {
-    return this.prisma.notification.findUnique({
-      where: { id: notificationId },
-    });
+  async deleteNotification(id: string) {
+    return this.prisma.notification.delete({ where: { id } });
   }
 
   async markAllAsRead(userId: string) {
