@@ -72,6 +72,7 @@ export class AuthService {
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
+          role: user.role,
         },
       };
     } catch {
@@ -111,6 +112,7 @@ export class AuthService {
           id: user.id,
           name: `${user.firstName} ${user.lastName}`,
           email: user.email,
+          role: user.role,
         },
       };
     } catch (error) {
