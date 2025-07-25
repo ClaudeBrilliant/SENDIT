@@ -1,0 +1,137 @@
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="user-info">
+        <div class="user-avatar">
+          <img [src]="courier.avatar" [alt]="courier.name">
+        </div>
+        <div class="user-details">
+          <h1 class="welcome-text">Welcome, {{courier.name}}!</h1>
+          <p class="user-email">{{courier.email}}</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="switchTab('assigned')">Assigned Parcels</button>
+        <button class="btn btn-secondary" (click)="switchTab('history')">Delivery History</button>
+        <button class="btn btn-ghost">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Stats -->
+  <section class="dashboard-stats">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon assigned">
+          <i class="icon-inbox"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{stats.assigned}}</h3>
+          <p>Assigned</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon in-transit">
+          <i class="icon-truck"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{stats.inTransit}}</h3>
+          <p>In Transit</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon delivered">
+          <i class="icon-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{stats.delivered}}</h3>
+          <p>Delivered</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cancelled">
+          <i class="icon-x"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{stats.cancelled}}</h3>
+          <p>Cancelled</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabs -->
+  <div class="dashboard-tabs">
+    <button class="tab-button" [class.active]="activeTab === 'assigned'" (click)="switchTab('assigned')">
+      <i class="icon-inbox"></i> Assigned Parcels
+    </button>
+    <button class="tab-button" [class.active]="activeTab === 'history'" (click)="switchTab('history')">
+      <i class="icon-check-circle"></i> Delivery History
+    </button>
+  </div>
+
+  <!-- Parcels List -->
+  <div class="parcels-section">
+    <div *ngIf="activeTab === 'assigned'">
+      <h2>Assigned Parcels</h2>
+      <div *ngIf="assignedParcels.length > 0; else noAssigned">
+        <div class="parcels-grid">
+          <div class="parcel-card" *ngFor="let parcel of assignedParcels">
+            <div class="parcel-header">
+              <div class="tracking-info">
+                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
+                <span class="parcel-status">{{parcel.status}}</span>
+              </div>
+            </div>
+            <div class="parcel-content">
+              <div class="recipient-info">
+                <h4>To: {{parcel.receiverName}}</h4>
+                <p>{{parcel.deliveryAddress}}</p>
+              </div>
+              <div class="parcel-details">
+                <span>Weight: {{parcel.weight}}kg</span>
+                <span>Created: {{parcel.createdAt}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noAssigned>
+        <div class="no-parcels">
+          <h3>No assigned parcels</h3>
+        </div>
+      </ng-template>
+    </div>
+    <div *ngIf="activeTab === 'history'">
+      <h2>Delivery History</h2>
+      <div *ngIf="deliveryHistory.length > 0; else noHistory">
+        <div class="parcels-grid">
+          <div class="parcel-card" *ngFor="let parcel of deliveryHistory">
+            <div class="parcel-header">
+              <div class="tracking-info">
+                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
+                <span class="parcel-status">{{parcel.status}}</span>
+              </div>
+            </div>
+            <div class="parcel-content">
+              <div class="recipient-info">
+                <h4>To: {{parcel.receiverName}}</h4>
+                <p>{{parcel.deliveryAddress}}</p>
+              </div>
+              <div class="parcel-details">
+                <span>Weight: {{parcel.weight}}kg</span>
+                <span>Delivered: {{parcel.deliveredAt}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noHistory>
+        <div class="no-parcels">
+          <h3>No delivery history</h3>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div> 
