@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsOptional, IsUUID, Min } from 'class-validator';
-import { IsNumber } from 'class-validator/types/decorator/typechecker/IsNumber';
+import { IsOptional, IsString, IsUUID, Min, IsNumber } from 'class-validator';
 
 export class CreateParcelDto {
   @IsUUID()
@@ -9,8 +7,8 @@ export class CreateParcelDto {
   @IsUUID()
   receiverId: string;
 
-  @IsUUID()
   @IsOptional()
+  @IsUUID()
   courierId?: string;
 
   @IsNumber()
@@ -21,12 +19,12 @@ export class CreateParcelDto {
   @Min(0)
   price: number;
 
-  @IsUUID()
-  pickupLocationId: string;
+  @IsString()
+  pickupAddress: string;
 
-  @IsUUID()
-  deliveryLocationId: string;
+  @IsString()
+  deliveryAddress: string;
 
-  @IsUUID()
-  currentStatusId: string;
+  @IsString()
+  statusName: string;
 }
