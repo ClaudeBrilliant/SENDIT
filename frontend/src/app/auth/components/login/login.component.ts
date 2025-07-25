@@ -3,12 +3,14 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavComponent } from "../../../shared/components/nav/nav.component";
+import { AuthService } from '../../services/auth.service';
+import { HttpClientModule } from '@angular/common/http';
 
 // Re-compile trigger
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavComponent],
+  imports: [CommonModule, ReactiveFormsModule, NavComponent, HttpClientModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -20,7 +22,8 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -33,20 +36,28 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
-      
-      // Simulate API call
-      setTimeout(() => {
-        const { email, password, rememberMe } = this.loginForm.value;
-        console.log('Login attempt:', { email, password, rememberMe });
-        
-        // Mock authentication - replace with actual auth service
-        if (email === 'test@example.com' && password === 'password123') {
-          this.router.navigate(['/user/dashboard']);
-        } else {
-          this.errorMessage = 'Invalid email or password';
+      const { email, password } = this.loginForm.value;
+      this.authService.login({ email, password }).subscribe({
+        next: (res) => {
+          // Store token if needed
+          if (res && res.access_token) {
+            localStorage.setItem('access_token', res.access_token);
+            // Route based on user role
+            if (res.user && res.user.role === 'ADMIN') {
+              this.router.navigate(['/admin/dashboard']);
+            } else {
+              this.router.navigate(['/user/dashboard']);
+            }
+          } else {
+            this.errorMessage = 'Unexpected response from server.';
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Login failed';
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      }, 1000);
+      });
     } else {
       this.markFormGroupTouched();
     }

@@ -3,11 +3,13 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavComponent } from '../../../shared/components/nav/nav.component';
+import { AuthService } from '../../services/auth.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavComponent],
+  imports: [CommonModule, ReactiveFormsModule, NavComponent, HttpClientModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
@@ -21,7 +23,8 @@ export class RegisterComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -50,27 +53,33 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
+    console.log('Register form submitted', this.registerForm.value, this.registerForm.valid);
     if (this.registerForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
       this.successMessage = '';
-      
-      // Simulate API call
-      setTimeout(() => {
-        const formData = this.registerForm.value;
-        console.log('Registration attempt:', formData);
-        
-        // Mock registration - replace with actual auth service
-        if (formData.email === 'test@example.com') {
-          this.errorMessage = 'Email already exists';
-        } else {
-          this.successMessage = 'Registration successful! Redirecting to login...';
-          setTimeout(() => {
-            this.router.navigate(['/auth/login']);
-          }, 2000);
+      const formData = this.registerForm.value;
+      // Combine firstName and lastName to match backend DTO
+      const data = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone
+      };
+      console.log('Calling register endpoint with:', data);
+      this.authService.register(data).subscribe({
+        next: (res) => {
+          console.log('Registration success:', res);
+          this.successMessage = 'Registration successful! Please log in.';
+          this.router.navigate(['/auth/login']);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Registration error:', err);
+          this.errorMessage = err?.error?.message || 'Registration failed';
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      }, 1500);
+      });
     } else {
       this.markFormGroupTouched();
     }
