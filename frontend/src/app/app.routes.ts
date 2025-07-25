@@ -14,6 +14,8 @@ import { TrackParcelComponent } from './user/components/track-parcel/track-parce
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
+  { path: 'register', redirectTo: 'auth/register', pathMatch: 'full' },
   { path: 'auth/login', component: LoginComponent },
   { path: 'auth/register', component: RegisterComponent },
   { path: 'auth/forgot-password', component: ForgotPasswordComponent },
