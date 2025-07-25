@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient, NotificationType } from '@prisma/client';
+import { NotificationType } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { MailerService } from 'src/shared/utils/mailer/mailer.service';
 
 @Injectable()
 export class NotificationsService {
-  private prisma = new PrismaClient();
-
-  constructor(private mailerService: MailerService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService,
+  ) {}
 
   async getUserNotifications(userId: string) {
     return this.prisma.notification.findMany({
@@ -25,24 +27,43 @@ export class NotificationsService {
   async createNotification(
     userId: string,
     content: string,
-    type: NotificationType = NotificationType.EMAIL, // Default to EMAIL, or use SMS/PUSH
+    type: NotificationType = NotificationType.EMAIL,
   ) {
     const notification = await this.prisma.notification.create({
       data: { userId, type, content },
     });
 
-    // Send email notification
+    // Optionally send email if type is EMAIL
     if (type === NotificationType.EMAIL) {
-      // Fetch user email if userId is not the email itself
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      const email = user?.email || userId; // fallback if user not found
-      await this.mailerService.sendEmail({
-        to: email,
-        subject: 'New Notification',
-        text: content,
-      });
+      if (user?.email) {
+        await this.mailerService.sendEmail({
+          to: user.email,
+          subject: 'New Notification',
+          text: content,
+        });
+      }
     }
 
     return notification;
+  }
+
+  async deleteNotification(notificationId: string) {
+    return this.prisma.notification.delete({
+      where: { id: notificationId },
+    });
+  }
+
+  async getNotificationById(notificationId: string) {
+    return this.prisma.notification.findUnique({
+      where: { id: notificationId },
+    });
+  }
+
+  async markAllAsRead(userId: string) {
+    return this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
+    });
   }
 }
