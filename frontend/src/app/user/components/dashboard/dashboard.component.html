@@ -28,11 +28,11 @@
           </div>
           <div class="user-info">
             <div class="user-avatar">
-              <img [src]="user.avatar" [alt]="user.firstName + ' ' + user.lastName">
+              <img [src]="user?.avatar" [alt]="(user?.firstName || '') + ' ' + (user?.lastName || '')">
             </div>
             <div class="user-details">
-              <h1 class="welcome-text">{{user.firstName}}!</h1>
-              <p class="user-email">{{user.email}}</p>
+              <h1 class="welcome-text">{{user?.firstName}}!</h1>
+              <p class="user-email">{{user?.email}}</p>
             </div>
           </div>
         </div>

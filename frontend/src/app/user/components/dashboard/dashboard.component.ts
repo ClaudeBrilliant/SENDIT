@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProfileComponent } from "../profile/profile.component";
 import { TrackParcelComponent } from "./../track-parcel/track-parcel.component";
+import { UserDashboardService } from '../../services/user-dashboard.service';
 
 // Interfaces
 export interface Parcel {
@@ -58,73 +59,9 @@ export interface DashboardState {
 export class UserDashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
-  // Mock data for demonstration
-  user: User = {
-    id: '1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phoneNumber: '+1234567890',
-    avatar: '/assets/images/default-avatar.png'
-  };
-
-  // Mock parcels data
-  sentParcels: Parcel[] = [
-    {
-      id: '1',
-      trackingNumber: 'SEND123456',
-      senderName: 'John Doe',
-      senderEmail: 'john.doe@example.com',
-      receiverName: 'Jane Smith',
-      receiverEmail: 'jane.smith@example.com',
-      pickupAddress: '123 Main St, City, State',
-      deliveryAddress: '456 Oak Ave, City, State',
-      weight: 2.5,
-      weightCategory: 'MEDIUM',
-      status: 'IN_TRANSIT',
-      estimatedDelivery: new Date('2024-01-25'),
-      createdAt: new Date('2024-01-20'),
-      updatedAt: new Date('2024-01-22'),
-      price: 29.99
-    },
-    {
-      id: '2',
-      trackingNumber: 'SEND789012',
-      senderName: 'John Doe',
-      senderEmail: 'john.doe@example.com',
-      receiverName: 'Bob Johnson',
-      receiverEmail: 'bob.johnson@example.com',
-      pickupAddress: '123 Main St, City, State',
-      deliveryAddress: '789 Pine St, City, State',
-      weight: 1.2,
-      weightCategory: 'LIGHT',
-      status: 'DELIVERED',
-      estimatedDelivery: new Date('2024-01-18'),
-      createdAt: new Date('2024-01-15'),
-      updatedAt: new Date('2024-01-18'),
-      price: 19.99
-    }
-  ];
-
-  receivedParcels: Parcel[] = [
-    {
-      id: '3',
-      trackingNumber: 'RECV345678',
-      senderName: 'Alice Brown',
-      senderEmail: 'alice.brown@example.com',
-      receiverName: 'John Doe',
-      receiverEmail: 'john.doe@example.com',
-      pickupAddress: '321 Elm St, City, State',
-      deliveryAddress: '123 Main St, City, State',
-      weight: 3.0,
-      weightCategory: 'HEAVY',
-      status: 'PENDING',
-      estimatedDelivery: new Date('2024-01-28'),
-      createdAt: new Date('2024-01-23'),
-      updatedAt: new Date('2024-01-23'),
-      price: 39.99
-    }
-  ];
+  user: User | null = null;
+  sentParcels: Parcel[] = [];
+  receivedParcels: Parcel[] = [];
   
   // Component state
   activeTab: 'sent' | 'received' = 'sent';
@@ -176,13 +113,27 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private dashboardService: UserDashboardService
   ) {
     this.initializeSearchForm();
   }
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user && user.id) {
+      this.loading = true;
+      this.dashboardService.getUserInfo(user.id).subscribe((userData: any) => {
+        this.user = userData;
+      });
+      this.dashboardService.getSentParcels(user.id).subscribe((parcels: any) => {
+        this.sentParcels = parcels;
+        this.loading = false;
+      });
+      this.dashboardService.getReceivedParcels(user.id).subscribe((parcels: any) => {
+        this.receivedParcels = parcels;
+      });
+    }
   }
 
   ngOnDestroy(): void {
