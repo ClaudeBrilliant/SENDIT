@@ -41,7 +41,7 @@ model Parcel {
   price               Float
   pickupLocationId    String
   deliveryLocationId  String
-  currentStatusId     String
+  currentStatus       DeliveryStatusEnum @default(PENDING)
   proofOfDelivery     ProofOfDelivery?
   tracking            ParcelTracking[]
   createdAt           DateTime         @default(now())
@@ -52,7 +52,6 @@ model Parcel {
   courier             User?            @relation("CourierParcels", fields: [courierId], references: [id])
   pickupLocation      Location         @relation("PickupLocation", fields: [pickupLocationId], references: [id])
   deliveryLocation    Location         @relation("DeliveryLocation", fields: [deliveryLocationId], references: [id])
-  currentStatus       DeliveryStatus   @relation(fields: [currentStatusId], references: [id])
 }
 
 model Location {
@@ -64,13 +63,6 @@ model Location {
 
   pickupParcels   Parcel[] @relation("PickupLocation")
   deliveryParcels Parcel[] @relation("DeliveryLocation")
-}
-
-model DeliveryStatus {
-  id          String    @id @default(uuid())
-  status      String    // e.g. "Pending", "In Transit", "Delivered"
-  updatedAt   DateTime  @default(now())
-  parcels     Parcel[]
 }
 
 model Notification {
@@ -117,4 +109,12 @@ model Feedback {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
+}
+
+enum DeliveryStatusEnum {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  // Add more as needed
 }
