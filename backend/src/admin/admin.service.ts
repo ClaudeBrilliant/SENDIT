@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, ConflictException } from '@nestjs/common';
-import { PrismaClient, NotificationType } from '@prisma/client';
+import { PrismaClient, NotificationType, DeliveryStatusEnum } from '@prisma/client';
 import {
   MailerService,
   ParcelInfo,
@@ -45,10 +45,10 @@ export class AdminService {
   }
 
   // Update parcel status
-  async updateParcelStatus(parcelId: string, statusId: string) {
+  async updateParcelStatus(parcelId: string, status: string) {
     const parcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      data: { currentStatusId: statusId },
+      data: { currentStatus: status as DeliveryStatusEnum },
       include: {
         pickupLocation: true,
         deliveryLocation: true,
@@ -60,19 +60,15 @@ export class AdminService {
     if (receiver) {
       const parcelInfo: ParcelInfo = {
         trackingNumber: parcel.id,
-        pickupLocation: parcel.pickupLocation.address,
-        deliveryLocation: parcel.deliveryLocation.address,
+        pickupLocation: parcel.pickupLocation ? parcel.pickupLocation.address : parcel.pickupLocationId,
+        deliveryLocation: parcel.deliveryLocation ? parcel.deliveryLocation.address : parcel.deliveryLocationId,
       };
       await this.mailerService.sendStatusUpdateEmail(
         receiver.email,
         parcelInfo,
-        statusId,
+        status,
       );
-      // Optionally, fetch the DeliveryStatus to check the status string
-      const statusObj = await this.prisma.deliveryStatus.findUnique({
-        where: { id: statusId },
-      });
-      if (statusObj && statusObj.status.toLowerCase() === 'delivered') {
+      if (status.toLowerCase() === 'delivered') {
         await this.mailerService.sendDeliveryNotification(
           receiver.email,
           parcelInfo,
@@ -90,7 +86,6 @@ export class AdminService {
         receiver: true,
         pickupLocation: true,
         deliveryLocation: true,
-        currentStatus: true,
       },
     });
   }
@@ -114,7 +109,23 @@ export class AdminService {
 
   // Update user
   async updateUser(userId: string, data: any) {
-    return this.prisma.user.update({ where: { id: userId }, data });
+    // Map 'name' to firstName and lastName if present
+    const updateData: any = { ...data };
+    if (updateData.name) {
+      const [firstName, ...rest] = updateData.name.split(' ');
+      updateData.firstName = firstName;
+      updateData.lastName = rest.join(' ');
+      delete updateData.name;
+    }
+    if (updateData.phone) {
+      updateData.phone = updateData.phone;
+    }
+    // Only allow valid fields
+    const allowedFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'role'];
+    Object.keys(updateData).forEach(key => {
+      if (!allowedFields.includes(key)) delete updateData[key];
+    });
+    return this.prisma.user.update({ where: { id: userId }, data: updateData });
   }
 
   // Delete user
@@ -131,7 +142,6 @@ export class AdminService {
         receiver: true,
         pickupLocation: true,
         deliveryLocation: true,
-        currentStatus: true,
       },
     });
   }
