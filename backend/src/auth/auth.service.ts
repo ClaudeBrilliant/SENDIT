@@ -75,7 +75,8 @@ export class AuthService {
           role: user.role,
         },
       };
-    } catch {
+    } catch (error) {
+      console.error('Registration error:', error);
       throw new InternalServerErrorException('Failed to register user');
     }
   }
