@@ -5,6 +5,7 @@ import {
   ParcelInfo,
 } from '../shared/utils/mailer/mailer.service';
 import { CreateParcelDto } from './dtos/CreateParcelDto';
+import { DeliveryStatusEnum } from '@prisma/client';
 
 @Injectable()
 export class ParcelsService {
@@ -45,10 +46,7 @@ export class ParcelsService {
     }
 
     // Find status by name
-    const status = await this.prisma.deliveryStatus.findFirst({
-      where: { status: dto.statusName },
-    });
-    if (!status) throw new NotFoundException('Status not found');
+    const status = dto.statusName as DeliveryStatusEnum; // Use the enum type
 
     // Create the parcel using the found/created IDs
     const parcel = await this.prisma.parcel.create({
@@ -60,7 +58,7 @@ export class ParcelsService {
         price: dto.price,
         pickupLocationId: pickupLocation.id,
         deliveryLocationId: deliveryLocation.id,
-        currentStatusId: status.id,
+        currentStatus: status as DeliveryStatusEnum,
       },
     });
     // Fetch receiver email and info
@@ -108,7 +106,6 @@ export class ParcelsService {
         courier: true,
         pickupLocation: true,
         deliveryLocation: true,
-        currentStatus: true,
         proofOfDelivery: true,
         tracking: true,
       },
@@ -119,7 +116,7 @@ export class ParcelsService {
   async updateParcelStatus(parcelId: string, currentStatusId: string) {
     const parcel = await this.prisma.parcel.update({
       where: { id: parcelId },
-      data: { currentStatus: currentStatusId }, // statusName must be a valid DeliveryStatusEnum value
+      data: { currentStatus: currentStatusId as DeliveryStatusEnum }, // statusName must be a valid DeliveryStatusEnum value
     });
     // Fetch receiver email and info
     const receiver = await this.prisma.user.findUnique({
@@ -147,5 +144,18 @@ export class ParcelsService {
       }
     }
     return parcel;
+  }
+
+  async getCourierHistory(courierId: string) {
+    return this.prisma.parcel.findMany({
+      where: {
+        courierId,
+        OR: [
+          { currentStatus: 'DELIVERED' },
+          { currentStatus: 'CANCELLED' },
+        ],
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
   }
 }

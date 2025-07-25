@@ -25,6 +25,11 @@ export class ParcelsController {
     return this.parcelsService.getAssignedParcels(courierId);
   }
 
+  @Get('history')
+  async getCourierHistory(@Query('courierId') courierId: string) {
+    return this.parcelsService.getCourierHistory(courierId);
+  }
+
   @Get(':id')
   async getParcelById(@Param('id') parcelId: string) {
     return this.parcelsService.getParcelById(parcelId);
