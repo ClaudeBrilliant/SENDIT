@@ -1,13 +1,13 @@
-@access_token = {{access_token}}
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNzhkNDA1OS0xNTI5LTRkYjktOGE2Ni0zMTI1NTA3MDYzYzUiLCJlbWFpbCI6InZpY3RvcmlhY2xhcmU0MEBnbWFpbC5jb20iLCJpYXQiOjE3NTM0MzE4MTksImV4cCI6MTc1MzQzNTQxOX0.6K7VZ5bvja1EmCAMGnMouirEQCzC2GF2J2_zzLX8PCM
 ### Register
 POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "StrongPassword123!",
-  "phone": "+254712345678"
+  "name": "Claude Brilliant",
+  "email": "claudebrilliant@gmail.com",
+  "password": "Ghost@2030",
+  "phone": "+254726698991"
 }
 
 ### Login
@@ -15,8 +15,8 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "testuser@example.com",
-  "password": "TestPass123!"
+  "email": "victoriaclare40@gmail.com",
+  "password": "Clare@040!"
 }
 
 ### Get Profile

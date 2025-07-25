@@ -4,8 +4,31 @@
 @delivery_location_id = {delivery_location_id}
 @status_id = {status_id}
 @parcel_id = {parcel_id}
-@courier_id = {courier_id}
+@courier_id = {courier_id}sys
+@user_id = {user_id}
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNzhkNDA1OS0xNTI5LTRkYjktOGE2Ni0zMTI1NTA3MDYzYzUiLCJlbWFpbCI6InZpY3RvcmlhY2xhcmU0MEBnbWFpbC5jb20iLCJpYXQiOjE3NTM0MzE4MTksImV4cCI6MTc1MzQzNTQxOX0.6K7VZ5bvja1EmCAMGnMouirEQCzC2GF2J2_zzLX8PCM
 
+
+### Register Admin
+POST http://localhost:3000/admin/register
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "User",
+  "email": "victoriaclare40@gmail.com",
+  "password": "Clare@040",
+  "phone": "+254700000000"
+}
+
+### Login Admin
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "victoriaclare40@gmail.com",
+  "password": "Clare@040"
+}
 ### Create Parcel (Admin)
 POST http://localhost:3000/admin/parcels
 Content-Type: application/json
@@ -20,12 +43,20 @@ Content-Type: application/json
   "currentStatusId": "{{status_id}}"
 }
 
+### Assign Courier
+PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/assign-courier
+Content-Type: application/json
+
+{
+  "courierId": "{{courier_id}}"
+}
+
 ### Update Parcel Status (Admin)
 PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/status
 Content-Type: application/json
 
 {
-  "statusId": "{{status_id}}"
+  "currentStatusId": "{{status_id}}"
 }
 
 ### List Parcels

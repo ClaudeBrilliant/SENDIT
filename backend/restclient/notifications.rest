@@ -1,5 +1,34 @@
 ### Get User Notifications
 GET http://localhost:3000/notifications?userId={{user_id}}
 
+### Get Notification By ID
+GET http://localhost:3000/notifications/{{notification_id}}
+
 ### Mark Notification as Read
-PATCH http://localhost:3000/notifications/{{notification_id}}/read 
+PATCH http://localhost:3000/notifications/{{notification_id}}/read
+Content-Type: application/json
+
+{
+  "read": true
+}
+
+### Mark All Notifications As Read
+PATCH http://localhost:3000/notifications/mark-all-read
+Content-Type: application/json
+
+{
+  "userId": "{{user_id}}"
+}
+
+### Create Notification
+POST http://localhost:3000/notifications
+Content-Type: application/json
+
+{
+  "userId": "{{user_id}}",
+  "content": "This is a test notification",
+  "type": "EMAIL"
+}
+
+### Delete Notification
+DELETE http://localhost:3000/notifications/{{notification_id}}

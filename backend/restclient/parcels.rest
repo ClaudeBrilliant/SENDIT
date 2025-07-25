@@ -1,15 +1,15 @@
-### Create Parcel
+### Create Parcel (using address and status name)
 POST http://localhost:3000/parcels
 Content-Type: application/json
 
 {
-  "senderId": "{{sender_id}}",
-  "receiverId": "{{receiver_id}}",
+  "senderId": "0bc50219-a968-485d-8d62-206defa00a95",
+  "receiverId": "f94435ef-77d6-41ec-9579-4d7c8babd3bc",
   "weight": 2.5,
   "price": 100,
-  "pickupLocationId": "{{pickup_location_id}}",
-  "deliveryLocationId": "{{delivery_location_id}}",
-  "currentStatusId": "{{status_id}}"
+  "pickupAddress": "Moi Avenue, Nairobi",
+  "deliveryAddress": "Kenyatta Avenue, Nairobi",
+  "statusName": "PENDING"
 }
 
 ### Get Sent Parcels
@@ -24,10 +24,10 @@ GET http://localhost:3000/parcels/assigned?courierId={{courier_id}}
 ### Get Parcel By ID
 GET http://localhost:3000/parcels/{{parcel_id}}
 
-### Update Parcel Status
+### Update Parcel Status (by status name)
 PATCH http://localhost:3000/parcels/{{parcel_id}}/status
 Content-Type: application/json
 
 {
-  "currentStatusId": "{{status_id}}"
-} 
+  "statusName": "DELIVERED"
+}
