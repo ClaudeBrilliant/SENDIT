@@ -22,6 +22,7 @@ model User {
   courierParcels    Parcel[]   @relation("CourierParcels")
   notifications     Notification[]
   feedbacks         Feedback[]
+  logs              Log[]
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 }
@@ -117,4 +118,16 @@ enum DeliveryStatusEnum {
   DELIVERED
   CANCELLED
   // Add more as needed
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
 }
