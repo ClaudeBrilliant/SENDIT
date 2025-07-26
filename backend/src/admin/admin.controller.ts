@@ -21,10 +21,26 @@ export class AdminController {
     return this.adminService.registerAdmin(dto);
   }
 
+  // Dashboard Stats
+  @Get('stats')
+  async getDashboardStats() {
+    return this.adminService.getDashboardStats();
+  }
+
   // Parcels
+  @Post('parcels')
+  async createParcel(@Body() data: any) {
+    return this.adminService.createParcel(data);
+  }
+
   @Get('parcels')
   getAllParcels() {
     return this.adminService.getAllParcels();
+  }
+
+  @Get('parcels/recent')
+  getRecentParcels() {
+    return this.adminService.getRecentParcels();
   }
 
   @Get('parcels/:parcelId')
@@ -58,6 +74,11 @@ export class AdminController {
     return this.adminService.getAllUsers();
   }
 
+  @Get('users/recent')
+  getRecentUsers() {
+    return this.adminService.getRecentUsers();
+  }
+
   @Get('users/:userId')
   getUserById(@Param('userId') userId: string) {
     return this.adminService.getUserById(userId);
@@ -77,5 +98,22 @@ export class AdminController {
   @Get('couriers')
   getAllCouriers() {
     return this.adminService.getAllCouriers();
+  }
+
+  // Logs
+  @Get('logs')
+  getLogs() {
+    return this.adminService.getLogs();
+  }
+
+  @Post('logs/sample')
+  createSampleLogs() {
+    return this.adminService.createSampleLogs();
+  }
+
+  // Analytics
+  @Get('analytics')
+  getAnalytics() {
+    return this.adminService.getAnalytics();
   }
 }
