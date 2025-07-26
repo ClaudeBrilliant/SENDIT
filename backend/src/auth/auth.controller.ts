@@ -25,7 +25,6 @@ import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
-  [x: string]: any;
   constructor(private readonly authService: AuthService) {}
 
   @Public()
@@ -44,7 +43,7 @@ export class AuthController {
           id: '03b1c0ac-2f0d-4d6b-a4b4-3416cf9c7c19',
           name: 'Juma Muliro',
           email: 'mmuliro59@gmail.com',
-          role: 'GUEST',
+          role: 'USER',
         },
       },
     },
@@ -75,21 +74,9 @@ export class AuthController {
     return this.authService.refreshToken(token);
   }
 
-  @Post('debug-password')
-  async debugPassword(@Body() body: { email: string }) {
-    try {
-      const user = await this.usersService.findByEmail(body.email);
-      return {
-        email: user.email,
-        hasPassword: !!user.password,
-        passwordLength: user.password?.length,
-        passwordStart: user.password?.substring(0, 10) + '...',
-        isActive: user.isActive,
-      };
-    } catch (error) {
-      return { error: error.message };
-    }
-  }
+
+
+
 
   @Post('validate')
   @UseGuards(JwtAuthGuard)
