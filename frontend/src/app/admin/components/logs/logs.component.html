@@ -1,21 +1,73 @@
 <div class="logs-container">
-  <h2 style="color: #FB9F3E;">System Logs</h2>
-  <table class="logs-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>User</th>
-        <th>Action</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let log of logs">
-        <td>{{log.date}}</td>
-        <td>{{log.user}}</td>
-        <td>{{log.action}}</td>
-        <td>{{log.details}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="logs-header">
+    <h2 style="color: #FB9F3E;">System Logs</h2>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="createSampleLogs()" [disabled]="loading">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Create Sample Logs
+      </button>
+      <button class="btn btn-primary" (click)="loadLogs()" [disabled]="loading">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading logs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-message">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="error-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadLogs()">Retry</button>
+    </div>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="logs-table-container" *ngIf="!loading && !error">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs" class="log-row">
+          <td class="date-cell">{{ formatDate(log.date) }}</td>
+          <td class="user-cell">{{ log.user }}</td>
+          <td class="action-cell">
+            <span class="action-badge" [ngClass]="getActionClass(log.action)">
+              {{ log.action }}
+            </span>
+          </td>
+          <td class="details-cell">{{ log.details }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- No Logs State -->
+    <div class="no-logs" *ngIf="logs.length === 0">
+      <div class="no-logs-content">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3>No logs found</h3>
+        <p>No system logs are currently available.</p>
+      </div>
+    </div>
+  </div>
 </div> 

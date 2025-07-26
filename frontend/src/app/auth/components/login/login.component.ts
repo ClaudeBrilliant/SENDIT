@@ -39,12 +39,15 @@ export class LoginComponent {
       const { email, password } = this.loginForm.value;
       this.authService.login({ email, password }).subscribe({
         next: (res) => {
-          // Store token if needed
+          // Store token and user info
           if (res && res.access_token) {
             localStorage.setItem('access_token', res.access_token);
+            localStorage.setItem('user', JSON.stringify(res.user));
             // Route based on user role
             if (res.user && res.user.role === 'ADMIN') {
               this.router.navigate(['/admin/dashboard']);
+            } else if (res.user && res.user.role === 'COURIER') {
+              this.router.navigate(['/courier/dashboard']);
             } else {
               this.router.navigate(['/user/dashboard']);
             }

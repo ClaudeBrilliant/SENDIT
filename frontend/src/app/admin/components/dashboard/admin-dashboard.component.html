@@ -89,6 +89,15 @@
   <main class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
     <div *ngIf="selectedTab === 'overview'">
       <section class="stats-section">
+        <div class="stats-header">
+          <h2 class="section-title">Dashboard Overview</h2>
+          <button class="btn btn-primary" (click)="selectTab('parcels')">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            View All Parcels
+          </button>
+        </div>
         <div class="stats-grid">
           <div class="stat-card total">
             <div class="stat-icon">
@@ -197,7 +206,7 @@
                   <div class="item-meta">{{ parcel.destination }} • {{ parcel.createdAt | date:'short' }}</div>
                 </div>
                 <div class="item-actions">
-                  <span class="status-badge" [ngClass]="'status-badge ' + parcel.status">
+                  <span class="status-badge" [ngClass]="'status-badge ' + (parcel.status || 'pending')">
                     {{ formatStatus(parcel.status) }}
                   </span>
                   <div class="item-amount">KSh {{ parcel.amount | number:'1.2-2' }}</div>
@@ -249,7 +258,7 @@
                   <div class="item-meta">{{ user.parcelsCount }} parcels • Joined {{ user.createdAt | date:'mediumDate' }}</div>
                 </div>
                 <div class="item-actions">
-                  <span class="status-badge" [ngClass]="'status-badge ' + user.status">
+                  <span class="status-badge" [ngClass]="'status-badge ' + (user.status || 'active')">
                     {{ formatStatus(user.status) }}
                   </span>
                 </div>

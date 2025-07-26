@@ -1,3 +1,7 @@
+@courier_id = 4119ba95-b792-4ed7-bdd1-127196ef3479
+@parcel_id = {parcel_id}
+@access_token = {access_token}
+
 ### Get Assigned Parcels (Courier)
 GET http://localhost:3000/courier/assigned?courierId={{courier_id}}
 
@@ -8,4 +12,25 @@ Content-Type: application/json
 {
   "location": "Nairobi, Kenya",
   "currentStatusId": "IN_TRANSIT"
+}
+
+### Update Parcel Status to Delivered
+PATCH http://localhost:3000/courier/parcels/{{parcel_id}}/location
+Content-Type: application/json
+
+{
+  "location": "Mombasa, Kenya",
+  "currentStatusId": "DELIVERED"
+}
+
+### Get Parcel History (Courier)
+GET http://localhost:3000/parcels/history?courierId={{courier_id}}
+
+### Login as Courier
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "victoriaclare400@gmail.com",
+  "password": "Clare@040"
 } 

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AdminService } from '../../services/admin.service';
 
 @Component({
   selector: 'app-create-order',
@@ -33,7 +34,8 @@ export class CreateOrderComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private adminService: AdminService
   ) {
     this.orderForm = this.fb.group({
       // Sender Information
@@ -111,6 +113,11 @@ export class CreateOrderComponent implements OnInit {
     return this.deliveryOptions.find(d => d.value === value)?.label || '';
   }
 
+  // Get dimensions FormGroup safely
+  get dimensionsGroup(): FormGroup {
+    return this.orderForm.get('dimensions') as FormGroup;
+  }
+
   // Form validation helpers
   isFieldInvalid(fieldName: string): boolean {
     const field = this.orderForm.get(fieldName);
@@ -137,28 +144,38 @@ export class CreateOrderComponent implements OnInit {
       this.errorMessage = '';
       this.successMessage = '';
 
-      // Simulate API call
-      setTimeout(() => {
-        const orderData = {
-          ...this.orderForm.value,
-          trackingNumber: this.generateTrackingNumber(),
-          totalPrice: this.calculatePrice(),
-          status: 'PENDING',
-          createdAt: new Date().toISOString()
-        };
+      // Prepare parcel data for API - the backend will handle user and location creation
+      const parcelData = {
+        senderName: this.orderForm.value.senderName,
+        senderEmail: this.orderForm.value.senderEmail,
+        senderPhone: this.orderForm.value.senderPhone,
+        senderAddress: this.orderForm.value.senderAddress,
+        receiverName: this.orderForm.value.receiverName,
+        receiverEmail: this.orderForm.value.receiverEmail,
+        receiverPhone: this.orderForm.value.receiverPhone,
+        receiverAddress: this.orderForm.value.receiverAddress,
+        weight: this.orderForm.value.weight,
+        price: this.calculatePrice()
+      };
 
-        console.log('Creating order:', orderData);
-        
-        // Simulate success
-        this.isLoading = false;
-        this.successMessage = `Order created successfully! Tracking number: ${orderData.trackingNumber}`;
-        
-        // Reset form after success
-        setTimeout(() => {
-          this.orderForm.reset();
-          this.ngOnInit(); // Re-initialize with defaults
-        }, 3000);
-      }, 2000);
+      console.log('Creating parcel:', parcelData);
+      
+              this.adminService.createParcel(parcelData).subscribe({
+          next: (response: any) => {
+            this.isLoading = false;
+            this.successMessage = `Parcel created successfully! Tracking ID: ${response.id}`;
+            
+            // Redirect to dashboard after 2 seconds
+            setTimeout(() => {
+              this.router.navigate(['/admin/dashboard']);
+            }, 2000);
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.errorMessage = error.error?.message || 'Failed to create parcel. Please try again.';
+            console.error('Error creating parcel:', error);
+          }
+        });
     } else {
       this.markFormGroupTouched();
     }
@@ -171,6 +188,8 @@ export class CreateOrderComponent implements OnInit {
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${prefix}${timestamp}${random}`;
   }
+
+
 
   // Mark all form fields as touched to show validation errors
   markFormGroupTouched(): void {

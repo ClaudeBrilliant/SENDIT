@@ -93,6 +93,12 @@
                 <span>Weight: {{parcel.weight}}kg</span>
                 <span>Created: {{parcel.createdAt}}</span>
               </div>
+              <div class="parcel-actions">
+                <button class="btn btn-primary" (click)="openUpdateModal(parcel)">
+                  <i class="icon-map-pin"></i>
+                  Update Location
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -132,6 +138,60 @@
           <h3>No delivery history</h3>
         </div>
       </ng-template>
+    </div>
+  </div>
+
+  <!-- Update Location Modal -->
+  <div *ngIf="showUpdateModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Update Parcel Location</h3>
+        <button class="close-btn" (click)="closeUpdateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="location">Current Location:</label>
+          <div class="location-input-group">
+            <input 
+              type="text" 
+              id="location" 
+              [(ngModel)]="updateForm.location" 
+              placeholder="Enter current location"
+              class="form-input"
+            >
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="getCurrentLocation()"
+              title="Get current location"
+            >
+              <i class="icon-map-pin"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="status">Status:</label>
+          <select 
+            id="status" 
+            [(ngModel)]="updateForm.status" 
+            class="form-select"
+          >
+            <option *ngFor="let option of statusOptions" [value]="option.value">
+              {{option.label}}
+            </option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeUpdateModal()">Cancel</button>
+          <button 
+            class="btn btn-primary" 
+            (click)="updateParcelLocation()"
+            [disabled]="!updateForm.location"
+          >
+            Update Location
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div> 

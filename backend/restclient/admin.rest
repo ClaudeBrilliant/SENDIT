@@ -1,13 +1,12 @@
-@sender_id = {sendr_id}
-@receiver_id = {receiver_id}
+@sender_id = 00cfbb2f-1f72-4494-94c2-36ae114f223a
+@receiver_id = cd8200b4-ef25-4908-86e4-4979ccf3efea
 @pickup_location_id = {pickup_location_id}
 @delivery_location_id = {delivery_location_id}
 @status_id = {status_id}
 @parcel_id = {parcel_id}
 @courier_id = {courier_id}sys
-@user_id = {user_id}
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNzhkNDA1OS0xNTI5LTRkYjktOGE2Ni0zMTI1NTA3MDYzYzUiLCJlbWFpbCI6InZpY3RvcmlhY2xhcmU0MEBnbWFpbC5jb20iLCJpYXQiOjE3NTM0MzE4MTksImV4cCI6MTc1MzQzNTQxOX0.6K7VZ5bvja1EmCAMGnMouirEQCzC2GF2J2_zzLX8PCM
-
+@user_id = 4119ba95-b792-4ed7-bdd1-127196ef3479
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhOGQyN2EzOS02OTcxLTQxMTctYTk0OS1mNjg2ZDNlMmE0NjciLCJlbWFpbCI6InZpY3RvcmlhY2xhcmU0MEBnbWFpbC5jb20iLCJpYXQiOjE3NTM0NDU0NTAsImV4cCI6MTc1MzUzMTg1MH0.3tfUML1hQUnedlxkZolNL4wkZZ_Rcnoc5Kj5zBm8g3k
 
 ### Register Admin
 POST http://localhost:3000/admin/register
@@ -16,9 +15,9 @@ Content-Type: application/json
 {
   "firstName": "Admin",
   "lastName": "User",
-  "email": "victoriaclare40@gmail.com",
+  "email": "victoriaclare400@gmail.com",
   "password": "Clare@040",
-  "phone": "+254700000000"
+  "phone": "+254700000010"
 }
 
 ### Login Admin
@@ -29,18 +28,22 @@ Content-Type: application/json
   "email": "victoriaclare40@gmail.com",
   "password": "Clare@040"
 }
+
 ### Create Parcel (Admin)
 POST http://localhost:3000/admin/parcels
 Content-Type: application/json
 
 {
-  "senderId": "{{sender_id}}",
-  "receiverId": "{{receiver_id}}",
+  "senderName": "John Doe",
+  "senderEmail": "john.doe@example.com",
+  "senderPhone": "+254712345678",
+  "senderAddress": "123 Main St, Nairobi, Kenya",
+  "receiverName": "Jane Smith",
+  "receiverEmail": "jane.smith@example.com",
+  "receiverPhone": "+254798765432",
+  "receiverAddress": "456 Oak Ave, Mombasa, Kenya",
   "weight": 2.5,
-  "price": 100,
-  "pickupLocationId": "{{pickup_location_id}}",
-  "deliveryLocationId": "{{delivery_location_id}}",
-  "currentStatusId": "{{status_id}}"
+  "price": 800
 }
 
 ### Assign Courier
@@ -51,13 +54,6 @@ Content-Type: application/json
   "courierId": "{{courier_id}}"
 }
 
-### Update Parcel Status (Admin)
-PATCH http://localhost:3000/admin/parcels/{{parcel_id}}/status
-Content-Type: application/json
-
-{
-  "currentStatusId": "{{status_id}}"
-}
 
 ### List Parcels
 GET http://localhost:3000/admin/parcels
@@ -69,19 +65,22 @@ GET http://localhost:3000/admin/users
 GET http://localhost:3000/admin/couriers 
 
 ### Get User By ID (Admin)
-GET http://localhost:3000/admin/users/{{user_id}}
+GET http://localhost:3000/admin/users/4119ba95-b792-4ed7-bdd1-127196ef3479
 
 ### Update User (Admin)
 PATCH http://localhost:3000/admin/users/{{user_id}}
 Content-Type: application/json
 
 {
-  "name": "Updated Name",
-  "email": "updated@example.com"
+  "name": "Courier One",
+  "email": "victoriaclare400@gmail.com",
+  "phone": "+254700000010",
+  "password": "Clare@040",
+  "role": "COURIER"
 }
 
 ### Delete User (Admin)
-DELETE http://localhost:3000/admin/users/{{user_id}}
+DELETE http://localhost:3000/admin/users/4119ba95-b792-4ed7-bdd1-127196ef3479
 
 ### Get Parcel By ID (Admin)
 GET http://localhost:3000/admin/parcels/{{parcel_id}}

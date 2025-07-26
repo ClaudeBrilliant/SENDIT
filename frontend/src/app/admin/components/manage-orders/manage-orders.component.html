@@ -104,8 +104,19 @@
         <p>Loading orders...</p>
       </div>
 
+      <!-- Error State -->
+      <div class="error-container" *ngIf="error && !isLoading">
+        <div class="error-message">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="error-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p>{{ error }}</p>
+          <button class="btn btn-primary" (click)="loadOrders()">Retry</button>
+        </div>
+      </div>
+
       <!-- Orders Table -->
-      <div class="orders-table-container" *ngIf="!isLoading">
+      <div class="orders-table-container" *ngIf="!isLoading && !error">
         <div class="table-header">
           <div class="table-info">
             <h3>Orders ({{ filteredOrders.length }})</h3>
@@ -214,7 +225,7 @@
         </div>
 
         <!-- No Orders Found -->
-        <div class="no-orders" *ngIf="filteredOrders.length === 0 && !isLoading">
+        <div class="no-orders" *ngIf="filteredOrders.length === 0 && !isLoading && !error">
           <div class="no-orders-content">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

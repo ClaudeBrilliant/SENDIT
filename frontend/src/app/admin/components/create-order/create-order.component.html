@@ -274,13 +274,13 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" [formGroup]="dimensionsGroup">
           <div class="form-group">
             <label for="length" class="form-label">Length (cm) *</label>
             <input
               type="number"
               id="length"
-              formControlName="dimensions.length"
+              formControlName="length"
               class="form-input"
               [class.error]="isFieldInvalid('dimensions.length')"
               placeholder="Length"
@@ -296,7 +296,7 @@
             <input
               type="number"
               id="width"
-              formControlName="dimensions.width"
+              formControlName="width"
               class="form-input"
               [class.error]="isFieldInvalid('dimensions.width')"
               placeholder="Width"
@@ -312,7 +312,7 @@
             <input
               type="number"
               id="height"
-              formControlName="dimensions.height"
+              formControlName="height"
               class="form-input"
               [class.error]="isFieldInvalid('dimensions.height')"
               placeholder="Height"

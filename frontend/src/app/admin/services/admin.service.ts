@@ -24,6 +24,10 @@ export class AdminService {
     return this.http.get(`${this.api}/admin/parcels`);
   }
 
+  createParcel(parcelData: any) {
+    return this.http.post(`${this.api}/admin/parcels`, parcelData);
+  }
+
   getAllUsers() {
     return this.http.get(`${this.api}/admin/users`);
   }
@@ -46,5 +50,25 @@ export class AdminService {
 
   getLogs() {
     return this.http.get(`${this.api}/admin/logs`);
+  }
+
+  updateUser(userId: string, userData: any) {
+    return this.http.patch(`${this.api}/admin/users/${userId}`, userData);
+  }
+
+  deleteUser(userId: string) {
+    return this.http.delete(`${this.api}/admin/users/${userId}`);
+  }
+
+  deleteParcel(parcelId: string) {
+    return this.http.delete(`${this.api}/admin/parcels/${parcelId}`);
+  }
+
+  updateParcel(parcelId: string, parcelData: any) {
+    return this.http.patch(`${this.api}/admin/parcels/${parcelId}`, parcelData);
+  }
+
+  createSampleLogs() {
+    return this.http.post(`${this.api}/admin/logs/sample`, {});
   }
 }

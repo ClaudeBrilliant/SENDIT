@@ -73,15 +73,36 @@ export class AdminDashboardComponent implements OnInit {
 
   fetchDashboardData() {
     this.loading = true;
-    this.adminService.getDashboardStats().subscribe(stats => {
-      this.stats = stats;
-      this.loading = false;
+    this.adminService.getDashboardStats().subscribe({
+      next: (stats) => {
+        this.stats = stats || {};
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching dashboard stats:', error);
+        this.stats = {};
+        this.loading = false;
+      }
     });
-    this.adminService.getRecentParcels().subscribe(parcels => {
-      this.recentParcels = parcels as any[];
+    
+    this.adminService.getRecentParcels().subscribe({
+      next: (parcels) => {
+        this.recentParcels = Array.isArray(parcels) ? parcels : [];
+      },
+      error: (error) => {
+        console.error('Error fetching recent parcels:', error);
+        this.recentParcels = [];
+      }
     });
-    this.adminService.getRecentUsers().subscribe(users => {
-      this.recentUsers = users as any[];
+    
+    this.adminService.getRecentUsers().subscribe({
+      next: (users) => {
+        this.recentUsers = Array.isArray(users) ? users : [];
+      },
+      error: (error) => {
+        console.error('Error fetching recent users:', error);
+        this.recentUsers = [];
+      }
     });
   }
 
@@ -121,12 +142,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   getUserInitials(name: string): string {
-    if (!name) return '';
+    if (!name || typeof name !== 'string') return '';
     const parts = name.split(' ');
     return parts.map(p => p[0]).join('').toUpperCase();
   }
 
   formatStatus(status: string): string {
+    if (!status) return '';
     return status.split('-').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

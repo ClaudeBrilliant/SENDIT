@@ -1,13 +1,13 @@
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNzhkNDA1OS0xNTI5LTRkYjktOGE2Ni0zMTI1NTA3MDYzYzUiLCJlbWFpbCI6InZpY3RvcmlhY2xhcmU0MEBnbWFpbC5jb20iLCJpYXQiOjE3NTM0MzE4MTksImV4cCI6MTc1MzQzNTQxOX0.6K7VZ5bvja1EmCAMGnMouirEQCzC2GF2J2_zzLX8PCM
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MDhhYWVhNC0xNDY0LTRhYzQtYmQyOS02NmIyYjIwZWQyOTEiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJpYXQiOjE3NTMzOTk3OTYsImV4cCI6MTc1MzQ4NjE5Nn0.GkwQQNARSmTg9NGTzZpFlbCfTwxLqlmi0-hi1hUvbbM
 ### Register
 POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "name": "Claude Brilliant",
-  "email": "claudebrilliant@gmail.com",
-  "password": "Ghost@2030",
-  "phone": "+254726698991"
+  "name": "John Doe",
+  "email": "johny@example.com",
+  "password": "StrongPassword123!",
+  "phone": "+254712345679"
 }
 
 ### Login
@@ -15,8 +15,8 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "victoriaclare40@gmail.com",
-  "password": "Clare@040!"
+  "email": "victoriaclare400@gmail.com",
+  "password": "Clare@040"
 }
 
 ### Get Profile
@@ -29,4 +29,6 @@ Authorization: Bearer {{access_token}}
 
 ### Validate Token
 POST http://localhost:3000/auth/validate
-Authorization: Bearer {{access_token}} 
+Authorization: Bearer {{access_token}}
+
+ 

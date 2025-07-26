@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AdminService } from '../../services/admin.service';
 import { UpdateStatusComponent } from '../update-status/update-status.component';
 
 export interface Order {
@@ -46,6 +47,7 @@ export class ManageOrdersComponent implements OnInit {
   filteredOrders: Order[] = [];
   selectedOrder: Order | null = null;
   isLoading = false;
+  error: string | null = null;
   searchForm: FormGroup;
   
   // Pagination
@@ -148,7 +150,8 @@ export class ManageOrdersComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private adminService: AdminService
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
@@ -165,14 +168,53 @@ export class ManageOrdersComponent implements OnInit {
 
   loadOrders(): void {
     this.isLoading = true;
+    this.error = null;
     
-    // Simulate API call
-    setTimeout(() => {
-      this.orders = [...this.mockOrders];
-      this.filteredOrders = [...this.orders];
-      this.calculatePagination();
-      this.isLoading = false;
-    }, 1000);
+    this.adminService.getAllParcels().subscribe({
+      next: (data: any) => {
+        console.log('Orders data received:', data); // Debug log
+        
+        // Transform the API response to match our Order interface
+        this.orders = (data || []).map((parcel: any) => ({
+          id: parcel.id,
+          trackingNumber: parcel.trackingNumber || parcel.id,
+          senderName: parcel.sender || 'Unknown Sender',
+          senderEmail: parcel.senderEmail || '',
+          senderPhone: parcel.senderPhone || '',
+          receiverName: parcel.receiver || 'Unknown Receiver',
+          receiverEmail: parcel.receiverEmail || '',
+          receiverPhone: parcel.receiverPhone || '',
+          pickupAddress: parcel.pickupLocation || 'Unknown Location',
+          deliveryAddress: parcel.deliveryLocation || 'Unknown Location',
+          packageDescription: 'Package', // Default description
+          weight: parcel.weight || 0,
+          weightCategory: this.getWeightCategory(parcel.weight || 0),
+          dimensions: { length: 30, width: 20, height: 15 }, // Default dimensions
+          deliveryType: 'standard', // Default delivery type
+          status: this.mapStatus(parcel.status),
+          paymentMethod: 'cash_on_delivery', // Default payment method
+          totalPrice: parcel.price || 0,
+          insurance: false, // Default insurance
+          pickupDate: new Date(parcel.createdAt),
+          estimatedDelivery: new Date(parcel.createdAt), // Default to creation date
+          createdAt: new Date(parcel.createdAt),
+          updatedAt: new Date(parcel.updatedAt || parcel.createdAt)
+        }));
+        
+        console.log('Transformed orders:', this.orders); // Debug log
+        this.filteredOrders = [...this.orders];
+        this.calculatePagination();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading orders:', error);
+        this.error = 'Failed to load orders. Please try again.';
+        this.orders = [];
+        this.filteredOrders = [];
+        this.calculatePagination();
+        this.isLoading = false;
+      }
+    });
   }
 
   setupSearchListener(): void {
@@ -248,6 +290,7 @@ export class ManageOrdersComponent implements OnInit {
   updateOrderStatus(orderId: string, newStatus: string): void {
     const order = this.orders.find(o => o.id === orderId);
     if (order) {
+      // Optimistically update UI
       order.status = newStatus as any;
       order.updatedAt = new Date();
       
@@ -258,13 +301,33 @@ export class ManageOrdersComponent implements OnInit {
         filteredOrder.updatedAt = new Date();
       }
       
-      // Simulate API call
-      console.log(`Updating order ${orderId} to status: ${newStatus}`);
+      // Map frontend status to backend status
+      const backendStatusMap: { [key: string]: string } = {
+        'pending': 'PENDING',
+        'picked-up': 'PENDING', // Backend doesn't have picked-up, use PENDING
+        'in-transit': 'IN_TRANSIT',
+        'out-for-delivery': 'IN_TRANSIT', // Backend doesn't have out-for-delivery, use IN_TRANSIT
+        'delivered': 'DELIVERED',
+        'cancelled': 'CANCELLED'
+      };
       
-      // Here you would typically:
-      // 1. Send email/SMS notification to receiver
-      // 2. Update tracking information
-      // 3. Log the status change
+      const backendStatus = backendStatusMap[newStatus] || 'PENDING';
+      
+      // Make API call to update status
+      this.adminService.updateParcel(orderId, { currentStatus: backendStatus }).subscribe({
+        next: (response: any) => {
+          console.log(`Successfully updated order ${orderId} status to ${newStatus}`);
+        },
+        error: (error: any) => {
+          console.error('Error updating order status:', error);
+          // Revert the optimistic update on error
+          order.status = order.status; // Keep current status
+          if (filteredOrder) {
+            filteredOrder.status = order.status;
+          }
+          alert('Failed to update order status. Please try again.');
+        }
+      });
     }
   }
 
@@ -359,9 +422,31 @@ export class ManageOrdersComponent implements OnInit {
 
   handleStatusUpdated(newStatus: string): void {
     if (this.orderToUpdate) {
-      this.orderToUpdate.status = newStatus as any;
-      this.orderToUpdate.updatedAt = new Date();
-      this.closeUpdateStatus();
+      // Map frontend status to backend status
+      const backendStatusMap: { [key: string]: string } = {
+        'pending': 'PENDING',
+        'picked-up': 'PENDING',
+        'in-transit': 'IN_TRANSIT',
+        'out-for-delivery': 'IN_TRANSIT',
+        'delivered': 'DELIVERED',
+        'cancelled': 'CANCELLED'
+      };
+      
+      const backendStatus = backendStatusMap[newStatus] || 'PENDING';
+      
+      // Make API call to update status
+      this.adminService.updateParcel(this.orderToUpdate.id, { currentStatus: backendStatus }).subscribe({
+        next: (response: any) => {
+          console.log(`Successfully updated order ${this.orderToUpdate!.id} status to ${newStatus}`);
+          this.orderToUpdate!.status = newStatus as any;
+          this.orderToUpdate!.updatedAt = new Date();
+          this.closeUpdateStatus();
+        },
+        error: (error: any) => {
+          console.error('Error updating order status:', error);
+          alert('Failed to update order status. Please try again.');
+        }
+      });
     }
   }
 
@@ -395,5 +480,23 @@ export class ManageOrdersComponent implements OnInit {
       'out-for-delivery': 'delivered'
     };
     return statusFlow[currentStatus] || currentStatus;
+  }
+
+  // Helper method to get weight category based on weight
+  getWeightCategory(weight: number): string {
+    if (weight < 1) return 'light';
+    if (weight < 5) return 'medium';
+    return 'heavy';
+  }
+
+  // Helper method to map backend status to frontend status
+  mapStatus(backendStatus: string): 'pending' | 'picked-up' | 'in-transit' | 'out-for-delivery' | 'delivered' | 'cancelled' {
+    const statusMap: { [key: string]: any } = {
+      'PENDING': 'pending',
+      'IN_TRANSIT': 'in-transit',
+      'DELIVERED': 'delivered',
+      'CANCELLED': 'cancelled'
+    };
+    return statusMap[backendStatus] || 'pending';
   }
 }

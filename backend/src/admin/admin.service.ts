@@ -20,28 +20,154 @@ export class AdminService {
 
   // Create a new parcel
   async createParcel(data: any) {
-    const parcel = await this.prisma.parcel.create({
-      data,
-      include: {
-        pickupLocation: true,
-        deliveryLocation: true,
-      },
-    });
-    const receiver = await this.prisma.user.findUnique({
-      where: { id: parcel.receiverId },
-    });
-    if (receiver) {
-      const parcelInfo: ParcelInfo = {
-        trackingNumber: parcel.id,
-        pickupLocation: parcel.pickupLocation.address,
-        deliveryLocation: parcel.deliveryLocation.address,
+    try {
+      console.log('Creating parcel with data:', data);
+      
+      // Format phone numbers (remove spaces, dashes, etc.) and ensure unique format
+      const formatPhone = (phone: string) => {
+        let formatted = phone.replace(/[\s\-\(\)]/g, '');
+        // If it starts with +254, convert to 0 format
+        if (formatted.startsWith('+254')) {
+          formatted = '0' + formatted.substring(4);
+        }
+        // If it starts with 254, convert to 0 format
+        if (formatted.startsWith('254')) {
+          formatted = '0' + formatted.substring(3);
+        }
+        return formatted;
       };
-      await this.mailerService.sendOrderCreatedEmail(
-        receiver.email,
-        parcelInfo,
-      );
+      
+      // First, create or find sender user
+      let sender = await this.prisma.user.findFirst({
+        where: { email: data.senderEmail }
+      });
+      
+      if (!sender) {
+        console.log('Creating new sender user');
+        const senderPhone = formatPhone(data.senderPhone);
+        
+        // Check if phone already exists
+        const existingUserWithPhone = await this.prisma.user.findFirst({
+          where: { phone: senderPhone }
+        });
+        
+        if (existingUserWithPhone) {
+          // Use existing user if phone matches
+          sender = existingUserWithPhone;
+          console.log('Using existing user with same phone:', sender.id);
+        } else {
+          sender = await this.prisma.user.create({
+            data: {
+              firstName: data.senderName.split(' ')[0],
+              lastName: data.senderName.split(' ').slice(1).join(' ') || 'Unknown',
+              email: data.senderEmail,
+              phone: senderPhone,
+              password: await bcrypt.hash('defaultPassword123', 10),
+              role: 'USER'
+            }
+          });
+        }
+      }
+
+      // Create or find receiver user
+      let receiver = await this.prisma.user.findFirst({
+        where: { email: data.receiverEmail }
+      });
+      
+      if (!receiver) {
+        console.log('Creating new receiver user');
+        const receiverPhone = formatPhone(data.receiverPhone);
+        
+        // Check if phone already exists
+        const existingUserWithPhone = await this.prisma.user.findFirst({
+          where: { phone: receiverPhone }
+        });
+        
+        if (existingUserWithPhone) {
+          // Use existing user if phone matches
+          receiver = existingUserWithPhone;
+          console.log('Using existing user with same phone:', receiver.id);
+        } else {
+          receiver = await this.prisma.user.create({
+            data: {
+              firstName: data.receiverName.split(' ')[0],
+              lastName: data.receiverName.split(' ').slice(1).join(' ') || 'Unknown',
+              email: data.receiverEmail,
+              phone: receiverPhone,
+              password: await bcrypt.hash('defaultPassword123', 10),
+              role: 'USER'
+            }
+          });
+        }
+      }
+
+      // Create pickup location
+      console.log('Creating pickup location');
+      const pickupLocation = await this.prisma.location.create({
+        data: {
+          label: 'Pickup Location',
+          address: data.senderAddress,
+          latitude: 0,
+          longitude: 0
+        }
+      });
+
+      // Create delivery location
+      console.log('Creating delivery location');
+      const deliveryLocation = await this.prisma.location.create({
+        data: {
+          label: 'Delivery Location',
+          address: data.receiverAddress,
+          latitude: 0,
+          longitude: 0
+        }
+      });
+
+      // Create the parcel
+      console.log('Creating parcel');
+      const parcel = await this.prisma.parcel.create({
+        data: {
+          senderId: sender.id,
+          receiverId: receiver.id,
+          weight: parseFloat(data.weight),
+          price: parseFloat(data.price),
+          pickupLocationId: pickupLocation.id,
+          deliveryLocationId: deliveryLocation.id,
+          currentStatus: 'PENDING'
+        },
+        include: {
+          sender: true,
+          receiver: true,
+          pickupLocation: true,
+          deliveryLocation: true,
+        },
+      });
+
+      console.log('Parcel created successfully:', parcel.id);
+
+      // Send notification email to receiver (optional - don't fail if email fails)
+      try {
+        if (receiver && parcel.pickupLocation && parcel.deliveryLocation) {
+          const parcelInfo: ParcelInfo = {
+            trackingNumber: parcel.id,
+            pickupLocation: parcel.pickupLocation.address,
+            deliveryLocation: parcel.deliveryLocation.address,
+          };
+          await this.mailerService.sendOrderCreatedEmail(
+            receiver.email,
+            parcelInfo,
+          );
+        }
+      } catch (emailError) {
+        console.warn('Failed to send email notification:', emailError);
+        // Don't fail the whole operation if email fails
+      }
+
+      return parcel;
+    } catch (error) {
+      console.error('Error creating parcel:', error);
+      throw error;
     }
-    return parcel;
   }
 
   // Update parcel status
@@ -120,6 +246,12 @@ export class AdminService {
     if (updateData.phone) {
       updateData.phone = updateData.phone;
     }
+    
+    // Hash password if it's being updated
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+    
     // Only allow valid fields
     const allowedFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'role'];
     Object.keys(updateData).forEach(key => {
@@ -187,7 +319,31 @@ export class AdminService {
 
   // Parcels
   async getAllParcels() {
-    return this.prisma.parcel.findMany();
+    const parcels = await this.prisma.parcel.findMany({
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true,
+      },
+    });
+    
+    return parcels.map(parcel => ({
+      id: parcel.id,
+      trackingNumber: parcel.id, // Using ID as tracking number for now
+      sender: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+      receiver: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+      status: parcel.currentStatus,
+      createdAt: parcel.createdAt,
+      weight: parcel.weight,
+      price: parcel.price,
+      pickupLocation: parcel.pickupLocation.address,
+      deliveryLocation: parcel.deliveryLocation.address,
+      senderEmail: parcel.sender.email,
+      receiverEmail: parcel.receiver.email,
+      senderPhone: parcel.sender.phone,
+      receiverPhone: parcel.receiver.phone
+    }));
   }
 
   async assignCourier(parcelId: string, courierId: string) {
@@ -199,11 +355,376 @@ export class AdminService {
 
   // Users
   async getAllUsers() {
-    return this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      include: {
+        _count: {
+          select: {
+            parcelsSent: true,
+            parcelsToReceive: true
+          }
+        }
+      }
+    });
+    
+    return users.map(user => ({
+      ...user,
+      parcelsCount: user._count.parcelsSent + user._count.parcelsToReceive
+    }));
   }
 
   // Couriers
   async getAllCouriers() {
     return this.prisma.user.findMany({ where: { role: 'COURIER' } });
+  }
+
+  // Dashboard Stats
+  async getDashboardStats() {
+    const [
+      totalParcels,
+      pendingParcels,
+      inTransitParcels,
+      deliveredParcels,
+      cancelledParcels,
+      totalUsers,
+      totalCouriers
+    ] = await Promise.all([
+      this.prisma.parcel.count(),
+      this.prisma.parcel.count({ where: { currentStatus: 'PENDING' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'IN_TRANSIT' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'DELIVERED' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'CANCELLED' } }),
+      this.prisma.user.count({ where: { role: 'USER' } }),
+      this.prisma.user.count({ where: { role: 'COURIER' } })
+    ]);
+
+    return {
+      total: totalParcels,
+      pending: pendingParcels,
+      inTransit: inTransitParcels,
+      delivered: deliveredParcels,
+      cancelled: cancelledParcels,
+      totalUsers,
+      totalCouriers
+    };
+  }
+
+  // Recent Parcels
+  async getRecentParcels() {
+    const parcels = await this.prisma.parcel.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true,
+      },
+    });
+    
+    return parcels.map(parcel => ({
+      id: parcel.id,
+      trackingNumber: parcel.id, // Using ID as tracking number for now
+      senderName: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+      receiverName: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+      destination: parcel.deliveryLocation.address,
+      status: parcel.currentStatus,
+      createdAt: parcel.createdAt,
+      weight: parcel.weight,
+      amount: parcel.price
+    }));
+  }
+
+  // Recent Users
+  async getRecentUsers() {
+    return this.prisma.user.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      where: { role: 'USER' }
+    });
+  }
+
+  // Logs
+  async getLogs() {
+    const logs = await this.prisma.log.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    return logs.map(log => ({
+      id: log.id,
+      date: log.createdAt,
+      user: log.user ? `${log.user.firstName} ${log.user.lastName} (${log.user.email})` : 'System',
+      action: log.action,
+      details: log.details,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent
+    }));
+  }
+
+  async createLog(data: {
+    userId?: string;
+    action: string;
+    details: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    return this.prisma.log.create({
+      data
+    });
+  }
+
+  async createSampleLogs() {
+    // Create some sample logs for testing
+    const sampleLogs = [
+      {
+        action: 'LOGIN',
+        details: 'Admin user logged in successfully',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      {
+        action: 'PARCEL_CREATED',
+        details: 'New parcel created with tracking number SEND0012345678',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      {
+        action: 'USER_CREATED',
+        details: 'New user account created: john.doe@example.com',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      {
+        action: 'STATUS_CHANGE',
+        details: 'Parcel status updated from PENDING to IN_TRANSIT',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      {
+        action: 'UPDATE',
+        details: 'User profile updated: jane.smith@example.com',
+        ipAddress: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    ];
+
+    for (const logData of sampleLogs) {
+      await this.prisma.log.create({
+        data: logData
+      });
+    }
+
+    return { message: 'Sample logs created successfully' };
+  }
+
+  // Analytics
+  async getAnalytics() {
+    // Get current date and calculate date ranges
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const lastDay = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Get parcel statistics
+    const [
+      totalParcels,
+      parcelsThisMonth,
+      parcelsThisWeek,
+      parcelsToday,
+      pendingParcels,
+      inTransitParcels,
+      deliveredParcels,
+      cancelledParcels
+    ] = await Promise.all([
+      this.prisma.parcel.count(),
+      this.prisma.parcel.count({
+        where: { createdAt: { gte: lastMonth } }
+      }),
+      this.prisma.parcel.count({
+        where: { createdAt: { gte: lastWeek } }
+      }),
+      this.prisma.parcel.count({
+        where: { createdAt: { gte: lastDay } }
+      }),
+      this.prisma.parcel.count({ where: { currentStatus: 'PENDING' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'IN_TRANSIT' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'DELIVERED' } }),
+      this.prisma.parcel.count({ where: { currentStatus: 'CANCELLED' } })
+    ]);
+
+    // Get user statistics
+    const [
+      totalUsers,
+      newUsersThisMonth,
+      newUsersThisWeek,
+      newUsersToday,
+      totalCouriers,
+      activeCouriers
+    ] = await Promise.all([
+      this.prisma.user.count({ where: { role: 'USER' } }),
+      this.prisma.user.count({
+        where: {
+          role: 'USER',
+          createdAt: { gte: lastMonth }
+        }
+      }),
+      this.prisma.user.count({
+        where: {
+          role: 'USER',
+          createdAt: { gte: lastWeek }
+        }
+      }),
+      this.prisma.user.count({
+        where: {
+          role: 'USER',
+          createdAt: { gte: lastDay }
+        }
+      }),
+      this.prisma.user.count({ where: { role: 'COURIER' } }),
+      this.prisma.parcel.groupBy({
+        by: ['courierId'],
+        where: {
+          courierId: { not: null },
+          createdAt: { gte: lastMonth }
+        }
+      })
+    ]);
+
+    // Get revenue statistics
+    const revenueData = await this.prisma.parcel.aggregate({
+      _sum: { price: true },
+      _avg: { price: true },
+      where: { currentStatus: 'DELIVERED' }
+    });
+
+    const monthlyRevenue = await this.prisma.parcel.aggregate({
+      _sum: { price: true },
+      where: {
+        currentStatus: 'DELIVERED',
+        createdAt: { gte: lastMonth }
+      }
+    });
+
+    // Get parcel status distribution for chart
+    const statusDistribution = await this.prisma.parcel.groupBy({
+      by: ['currentStatus'],
+      _count: { currentStatus: true }
+    });
+
+    // Get monthly parcel trends
+    const monthlyTrends = await this.prisma.parcel.groupBy({
+      by: ['createdAt'],
+      _count: { id: true },
+      where: {
+        createdAt: { gte: lastMonth }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    // Get top locations
+    const topPickupLocations = await this.prisma.parcel.groupBy({
+      by: ['pickupLocationId'],
+      _count: { pickupLocationId: true },
+      orderBy: {
+        _count: {
+          pickupLocationId: 'desc'
+        }
+      },
+      take: 5
+    });
+
+    const topDeliveryLocations = await this.prisma.parcel.groupBy({
+      by: ['deliveryLocationId'],
+      _count: { deliveryLocationId: true },
+      orderBy: {
+        _count: {
+          deliveryLocationId: 'desc'
+        }
+      },
+      take: 5
+    });
+
+    // Get location details for top locations
+    const pickupLocationDetails = await Promise.all(
+      topPickupLocations.map(async (location) => {
+        const locationData = await this.prisma.location.findUnique({
+          where: { id: location.pickupLocationId }
+        });
+        return {
+          location: locationData?.address || 'Unknown',
+          count: location._count.pickupLocationId
+        };
+      })
+    );
+
+    const deliveryLocationDetails = await Promise.all(
+      topDeliveryLocations.map(async (location) => {
+        const locationData = await this.prisma.location.findUnique({
+          where: { id: location.deliveryLocationId }
+        });
+        return {
+          location: locationData?.address || 'Unknown',
+          count: location._count.deliveryLocationId
+        };
+      })
+    );
+
+    return {
+      overview: {
+        totalParcels,
+        totalUsers,
+        totalCouriers,
+        totalRevenue: revenueData._sum.price || 0,
+        averageRevenue: revenueData._avg.price || 0
+      },
+      trends: {
+        parcelsThisMonth,
+        parcelsThisWeek,
+        parcelsToday,
+        newUsersThisMonth,
+        newUsersThisWeek,
+        newUsersToday,
+        monthlyRevenue: monthlyRevenue._sum.price || 0
+      },
+      status: {
+        pending: pendingParcels,
+        inTransit: inTransitParcels,
+        delivered: deliveredParcels,
+        cancelled: cancelledParcels
+      },
+      charts: {
+        statusDistribution: statusDistribution.map(item => ({
+          status: item.currentStatus,
+          count: item._count.currentStatus
+        })),
+        monthlyTrends: monthlyTrends.map(item => ({
+          date: item.createdAt,
+          count: item._count.id
+        }))
+      },
+      locations: {
+        topPickup: pickupLocationDetails,
+        topDelivery: deliveryLocationDetails
+      },
+      performance: {
+        activeCouriers: activeCouriers.length,
+        deliveryRate: deliveredParcels > 0 ? (deliveredParcels / totalParcels) * 100 : 0,
+        averageDeliveryTime: 2.5 // This would need more complex calculation
+      }
+    };
   }
 }

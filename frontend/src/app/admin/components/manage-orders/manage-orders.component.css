@@ -193,6 +193,37 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Error State */
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 2rem;
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.error-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #dc2626;
+}
+
+.error-message p {
+  font-size: 1.125rem;
+  color: #374151;
+  margin: 0;
+}
+
 /* Table Header */
 .table-header {
   display: flex;
