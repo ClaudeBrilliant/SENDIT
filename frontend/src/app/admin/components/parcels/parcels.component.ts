@@ -154,4 +154,17 @@ export class ParcelsComponent implements OnInit {
       });
     }
   }
+
+  trackParcel(trackingNumber: string) {
+    // Close the modal first
+    this.closeParcelDetails();
+    
+    // Navigate to track parcel tab
+    // This will be handled by the parent dashboard component
+    console.log('Track parcel:', trackingNumber);
+    
+    // You can implement navigation logic here if needed
+    // For now, we'll just log the tracking number
+    alert(`Redirecting to track parcel: ${trackingNumber}`);
+  }
 } 
