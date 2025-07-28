@@ -23,6 +23,7 @@ model User {
   notifications     Notification[]
   feedbacks         Feedback[]
   logs              Log[]
+  courierLocations  CourierLocation[]
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 }
@@ -130,4 +131,15 @@ model Log {
   createdAt DateTime @default(now())
 
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model CourierLocation {
+  id        String   @id @default(uuid())
+  courierId String
+  latitude  Float
+  longitude Float
+  address   String?
+  timestamp DateTime @default(now())
+
+  courier   User     @relation(fields: [courierId], references: [id])
 }
