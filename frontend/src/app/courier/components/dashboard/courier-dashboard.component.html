@@ -12,6 +12,9 @@
         </div>
       </div>
       <div class="header-actions">
+        <div class="location-status">
+          <span class="location-indicator">📍 Location Tracking Active</span>
+        </div>
         <button class="btn btn-primary" (click)="switchTab('assigned')">Assigned Parcels</button>
         <button class="btn btn-secondary" (click)="switchTab('history')">Delivery History</button>
         <button class="btn btn-ghost">Logout</button>
@@ -80,18 +83,18 @@
           <div class="parcel-card" *ngFor="let parcel of assignedParcels">
             <div class="parcel-header">
               <div class="tracking-info">
-                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
-                <span class="parcel-status">{{parcel.status}}</span>
+                <h3 class="tracking-number">#{{parcel.id}}</h3>
+                <span class="parcel-status">{{parcel.currentStatus}}</span>
               </div>
             </div>
             <div class="parcel-content">
               <div class="recipient-info">
-                <h4>To: {{parcel.receiverName}}</h4>
-                <p>{{parcel.deliveryAddress}}</p>
+                <h4>To: {{parcel.receiver?.firstName}} {{parcel.receiver?.lastName}}</h4>
+                <p>{{parcel.deliveryLocation?.address}}</p>
               </div>
               <div class="parcel-details">
                 <span>Weight: {{parcel.weight}}kg</span>
-                <span>Created: {{parcel.createdAt}}</span>
+                <span>Created: {{parcel.createdAt | date}}</span>
               </div>
               <div class="parcel-actions">
                 <button class="btn btn-primary" (click)="openUpdateModal(parcel)">
@@ -116,18 +119,18 @@
           <div class="parcel-card" *ngFor="let parcel of deliveryHistory">
             <div class="parcel-header">
               <div class="tracking-info">
-                <h3 class="tracking-number">#{{parcel.trackingNumber}}</h3>
-                <span class="parcel-status">{{parcel.status}}</span>
+                <h3 class="tracking-number">#{{parcel.id}}</h3>
+                <span class="parcel-status">{{parcel.currentStatus}}</span>
               </div>
             </div>
             <div class="parcel-content">
               <div class="recipient-info">
-                <h4>To: {{parcel.receiverName}}</h4>
-                <p>{{parcel.deliveryAddress}}</p>
+                <h4>To: {{parcel.receiver?.firstName}} {{parcel.receiver?.lastName}}</h4>
+                <p>{{parcel.deliveryLocation?.address}}</p>
               </div>
               <div class="parcel-details">
                 <span>Weight: {{parcel.weight}}kg</span>
-                <span>Delivered: {{parcel.deliveredAt}}</span>
+                <span>Updated: {{parcel.updatedAt | date}}</span>
               </div>
             </div>
           </div>
