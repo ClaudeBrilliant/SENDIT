@@ -145,6 +145,12 @@ export class AdminService {
 
       console.log('Parcel created successfully:', parcel.id);
 
+      // Create a log entry for the parcel creation
+      await this.createLog({
+        action: 'PARCEL_CREATED',
+        details: `New parcel created with ID: ${parcel.id}, weight: ${data.weight}kg, price: ${data.price}`
+      });
+
       // Send notification email to receiver (optional - don't fail if email fails)
       try {
         if (receiver && parcel.pickupLocation && parcel.deliveryLocation) {
@@ -280,7 +286,15 @@ export class AdminService {
 
   // Update parcel
   async updateParcel(parcelId: string, data: any) {
-    return this.prisma.parcel.update({ where: { id: parcelId }, data });
+    const updatedParcel = await this.prisma.parcel.update({ where: { id: parcelId }, data });
+
+    // Create a log entry for the parcel update
+    await this.createLog({
+      action: 'PARCEL_UPDATED',
+      details: `Parcel ${parcelId} updated with data: ${JSON.stringify(data)}`
+    });
+
+    return updatedParcel;
   }
 
   // Delete parcel
@@ -347,10 +361,40 @@ export class AdminService {
   }
 
   async assignCourier(parcelId: string, courierId: string) {
-    return this.prisma.parcel.update({
-      where: { id: parcelId },
-      data: { courierId },
+    // First check if the parcel exists
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: parcelId }
     });
+
+    if (!parcel) {
+      throw new Error(`Parcel with ID ${parcelId} not found`);
+    }
+
+    // Check if the courier exists
+    const courier = await this.prisma.user.findUnique({
+      where: { id: courierId, role: 'COURIER' }
+    });
+
+    if (!courier) {
+      throw new Error(`Courier with ID ${courierId} not found`);
+    }
+
+    const updatedParcel = await this.prisma.parcel.update({
+      where: { id: parcelId },
+      data: { 
+        courierId,
+        currentStatus: 'IN_TRANSIT' // Automatically change status to IN_TRANSIT when courier is assigned
+      },
+    });
+
+    // Create a log entry for the courier assignment
+    await this.createLog({
+      action: 'COURIER_ASSIGNED',
+      details: `Courier ${courier.firstName} ${courier.lastName} assigned to parcel ${parcelId}`,
+      userId: courierId
+    });
+
+    return updatedParcel;
   }
 
   // Users
@@ -374,7 +418,27 @@ export class AdminService {
 
   // Couriers
   async getAllCouriers() {
-    return this.prisma.user.findMany({ where: { role: 'COURIER' } });
+    const couriers = await this.prisma.user.findMany({ 
+      where: { role: 'COURIER' },
+      include: {
+        _count: {
+          select: {
+            courierParcels: true
+          }
+        }
+      }
+    });
+    
+    return couriers.map(courier => ({
+      id: courier.id,
+      firstName: courier.firstName,
+      lastName: courier.lastName,
+      email: courier.email,
+      phone: courier.phone,
+      status: 'active', // Default status - you can add a status field to the User model if needed
+      assignedParcels: courier._count.courierParcels,
+      rating: 4.5 // Default rating - you can add a rating field to the User model if needed
+    }));
   }
 
   // Dashboard Stats
@@ -726,5 +790,84 @@ export class AdminService {
         averageDeliveryTime: 2.5 // This would need more complex calculation
       }
     };
+  }
+
+  async getCourierLocation(parcelId: string) {
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: parcelId },
+      include: {
+        courier: true
+      }
+    });
+
+    if (!parcel || !parcel.courierId) {
+      return { error: 'No courier assigned to this parcel' };
+    }
+
+    // Get the courier's latest location from the database
+    const courierLocation = await this.prisma.courierLocation.findFirst({
+      where: { courierId: parcel.courierId },
+      orderBy: { timestamp: 'desc' }
+    });
+
+    if (!courierLocation) {
+      return { 
+        courierId: parcel.courierId,
+        courierName: `${parcel.courier?.firstName} ${parcel.courier?.lastName}`,
+        error: 'No location data available for this courier'
+      };
+    }
+
+    return {
+      courierId: parcel.courierId,
+      courierName: `${parcel.courier?.firstName} ${parcel.courier?.lastName}`,
+      location: {
+        latitude: courierLocation.latitude,
+        longitude: courierLocation.longitude,
+        address: courierLocation.address || 'Location updated',
+        timestamp: courierLocation.timestamp.toISOString()
+      }
+    };
+  }
+
+  async getParcelTrackingHistory(parcelId: string) {
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: parcelId },
+      include: {
+        pickupLocation: true,
+        deliveryLocation: true
+      }
+    });
+
+    if (!parcel) {
+      return [];
+    }
+
+    // Create tracking history based on parcel status and timestamps
+    const history = [
+      {
+        id: '1',
+        parcelId: parcelId,
+        status: 'PENDING',
+        location: parcel.pickupLocation?.address || 'Pickup Location',
+        timestamp: parcel.createdAt,
+        description: 'Parcel created and ready for pickup'
+      }
+    ];
+
+    if (parcel.currentStatus !== 'PENDING') {
+      history.push({
+        id: '2',
+        parcelId: parcelId,
+        status: parcel.currentStatus,
+        location: parcel.currentStatus === 'DELIVERED' 
+          ? (parcel.deliveryLocation?.address || 'Delivery Location')
+          : 'En route to destination',
+        timestamp: parcel.updatedAt,
+        description: `Parcel ${parcel.currentStatus.toLowerCase()}`
+      });
+    }
+
+    return history;
   }
 }
