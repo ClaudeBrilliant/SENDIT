@@ -96,6 +96,61 @@ export class ParcelsService {
     return this.prisma.parcel.findMany({ where: { courierId } });
   }
 
+  // Track parcel by tracking number (parcel ID)
+  async trackParcel(trackingNumber: string) {
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: trackingNumber },
+      include: {
+        sender: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        receiver: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        pickupLocation: true,
+        deliveryLocation: true,
+        courier: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    });
+
+    if (!parcel) {
+      throw new NotFoundException(`Parcel with tracking number ${trackingNumber} not found`);
+    }
+
+    // Transform the data for frontend consumption
+    return {
+      id: parcel.id,
+      trackingNumber: parcel.id, // Use ID as tracking number
+      sender: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
+      receiver: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
+      pickupLocation: parcel.pickupLocation?.address || 'Pickup Location',
+      deliveryLocation: parcel.deliveryLocation?.address || 'Delivery Location',
+      currentStatus: parcel.currentStatus,
+      weight: parcel.weight,
+      price: parcel.price,
+      createdAt: parcel.createdAt,
+      updatedAt: parcel.updatedAt,
+      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null
+    };
+  }
+
   // Get parcel details by id
   async getParcelById(parcelId: string) {
     return this.prisma.parcel.findUnique({

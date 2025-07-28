@@ -30,6 +30,11 @@ export class ParcelsController {
     return this.parcelsService.getCourierHistory(courierId);
   }
 
+  @Get('track/:trackingNumber')
+  async trackParcel(@Param('trackingNumber') trackingNumber: string) {
+    return this.parcelsService.trackParcel(trackingNumber);
+  }
+
   @Get(':id')
   async getParcelById(@Param('id') parcelId: string) {
     return this.parcelsService.getParcelById(parcelId);
