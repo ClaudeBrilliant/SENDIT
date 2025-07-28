@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -70,5 +71,30 @@ export class AdminService {
 
   createSampleLogs() {
     return this.http.post(`${this.api}/admin/logs/sample`, {});
+  }
+
+  getAvailableCouriers() {
+    return this.http.get(`${this.api}/admin/couriers`);
+  }
+
+  assignCourierToParcel(parcelId: string, courierId: string) {
+    return this.http.patch(`${this.api}/admin/parcels/${parcelId}/assign-courier`, { courierId });
+  }
+
+  // Get all parcel IDs for testing tracking
+  getAllParcelIds() {
+    return this.http.get<any[]>(`${this.api}/admin/parcels`).pipe(
+      map(parcels => parcels.map(parcel => ({ id: parcel.id, trackingNumber: parcel.id })))
+    );
+  }
+
+  // Get courier location for a parcel
+  getCourierLocation(parcelId: string) {
+    return this.http.get<any>(`${this.api}/admin/parcels/${parcelId}/courier-location`);
+  }
+
+  // Get parcel tracking history
+  getParcelTrackingHistory(parcelId: string) {
+    return this.http.get<any[]>(`${this.api}/admin/parcels/${parcelId}/tracking-history`);
   }
 }
