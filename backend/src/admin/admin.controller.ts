@@ -116,4 +116,15 @@ export class AdminController {
   getAnalytics() {
     return this.adminService.getAnalytics();
   }
+
+  // Tracking
+  @Get('parcels/:parcelId/courier-location')
+  getCourierLocation(@Param('parcelId') parcelId: string) {
+    return this.adminService.getCourierLocation(parcelId);
+  }
+
+  @Get('parcels/:parcelId/tracking-history')
+  getParcelTrackingHistory(@Param('parcelId') parcelId: string) {
+    return this.adminService.getParcelTrackingHistory(parcelId);
+  }
 }
