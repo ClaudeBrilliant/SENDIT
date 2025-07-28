@@ -33,6 +33,20 @@ export interface Order {
   estimatedDelivery: Date;
   createdAt: Date;
   updatedAt: Date;
+  courierId?: string;
+  courierName?: string;
+}
+
+export interface Courier {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  status: 'active' | 'inactive' | 'busy';
+  currentLocation?: string;
+  assignedParcels: number;
+  rating?: number;
 }
 
 @Component({
@@ -147,6 +161,13 @@ export class ManageOrdersComponent implements OnInit {
 
   showUpdateStatusModal = false;
   orderToUpdate: Order | null = null;
+  
+  // Courier assignment
+  showCourierAssignmentModal = false;
+  orderToAssignCourier: Order | null = null;
+  availableCouriers: Courier[] = [];
+  selectedCourierId: string = '';
+  assigningCourier = false;
 
   constructor(
     private fb: FormBuilder,
@@ -170,6 +191,7 @@ export class ManageOrdersComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
     
+    console.log('Loading orders from API...');
     this.adminService.getAllParcels().subscribe({
       next: (data: any) => {
         console.log('Orders data received:', data); // Debug log
@@ -447,6 +469,90 @@ export class ManageOrdersComponent implements OnInit {
           alert('Failed to update order status. Please try again.');
         }
       });
+    }
+  }
+
+  // Courier Assignment Methods
+  openCourierAssignment(order: Order): void {
+    alert('Button clicked! Opening courier assignment for order: ' + order.trackingNumber);
+    console.log('Opening courier assignment for order:', order);
+    this.orderToAssignCourier = order;
+    this.selectedCourierId = order.courierId || '';
+    this.loadAvailableCouriers();
+    this.showCourierAssignmentModal = true;
+    console.log('Modal should be visible:', this.showCourierAssignmentModal);
+  }
+
+  closeCourierAssignment(): void {
+    this.showCourierAssignmentModal = false;
+    this.orderToAssignCourier = null;
+    this.selectedCourierId = '';
+    this.availableCouriers = [];
+  }
+
+  loadAvailableCouriers(): void {
+    console.log('Loading available couriers...');
+    this.adminService.getAvailableCouriers().subscribe({
+      next: (couriers: any) => {
+        this.availableCouriers = couriers || [];
+        console.log('Available couriers loaded:', this.availableCouriers);
+      },
+      error: (error: any) => {
+        console.error('Error loading couriers:', error);
+        this.availableCouriers = [];
+      }
+    });
+  }
+
+  assignCourierToOrder(): void {
+    if (!this.orderToAssignCourier || !this.selectedCourierId) {
+      return;
+    }
+
+    this.assigningCourier = true;
+    this.adminService.assignCourierToParcel(this.orderToAssignCourier.id, this.selectedCourierId).subscribe({
+      next: (response: any) => {
+        console.log('Courier assigned successfully:', response);
+        
+        // Update the order in the local array
+        const orderIndex = this.orders.findIndex(o => o.id === this.orderToAssignCourier!.id);
+        if (orderIndex !== -1) {
+          const selectedCourier = this.availableCouriers.find(c => c.id === this.selectedCourierId);
+          this.orders[orderIndex] = {
+            ...this.orders[orderIndex],
+            courierId: this.selectedCourierId,
+            courierName: selectedCourier ? `${selectedCourier.firstName} ${selectedCourier.lastName}` : '',
+            status: 'in-transit' // Update status to in-transit when courier is assigned
+          };
+        }
+        
+        this.closeCourierAssignment();
+        this.assigningCourier = false;
+        alert('Courier assigned successfully! Status updated to In Transit.');
+      },
+      error: (error: any) => {
+        console.error('Error assigning courier:', error);
+        this.assigningCourier = false;
+        alert('Failed to assign courier. Please try again.');
+      }
+    });
+  }
+
+  getCourierStatusClass(status: string): string {
+    switch (status) {
+      case 'active': return 'status-active';
+      case 'busy': return 'status-busy';
+      case 'inactive': return 'status-inactive';
+      default: return 'status-inactive';
+    }
+  }
+
+  getCourierStatusLabel(status: string): string {
+    switch (status) {
+      case 'active': return 'Available';
+      case 'busy': return 'Busy';
+      case 'inactive': return 'Inactive';
+      default: return 'Unknown';
     }
   }
 
