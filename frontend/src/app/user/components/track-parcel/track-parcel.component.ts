@@ -7,6 +7,7 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 import { latLng, tileLayer, marker, icon, MapOptions, Layer, polyline, LatLngBounds } from 'leaflet';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { CommonModule } from '@angular/common';
+import { ParcelService } from '../../services/parcel.service';
 
 interface NominatimResponse {
   place_id: number;
@@ -59,7 +60,7 @@ export class TrackParcelComponent implements AfterViewInit, OnDestroy {
   mapLayers: Layer[] = [];
   loading = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private parcelService: ParcelService) {}
 
   // Geocode a place name to coordinates using OpenStreetMap Nominatim
   async geocodePlace(placeName: string): Promise<{ lat: number, lng: number } | null> {
@@ -98,67 +99,140 @@ export class TrackParcelComponent implements AfterViewInit, OnDestroy {
 
   async track() {
     this.loading = true;
+    this.found = false;
+    this.status = '';
+    this.history = [];
+    this.pickupCoordinates = null;
+    this.deliveryCoordinates = null;
+    this.currentCoordinates = null;
+    this.mapLayers = [];
     
     try {
-      // Mock tracking logic with real places
-      if (this.trackingNumber === 'SEND123456') {
+      // Try to get real parcel data first
+      const parcel = await this.parcelService.trackParcel(this.trackingNumber).toPromise();
+      
+      if (parcel) {
         this.found = true;
-        this.status = 'In Transit';
+        this.status = this.formatStatus(parcel.currentStatus);
         
-        // Real place names for Kenya
-        this.pickupLocation = 'KICC, Nairobi, Kenya';
-        this.deliveryLocation = 'Fort Jesus, Mombasa, Kenya';
-        this.currentLocation = 'Nakuru Town, Kenya';
+        // Set locations from parcel data
+        this.pickupLocation = parcel.pickupLocation || 'Pickup Location';
+        this.deliveryLocation = parcel.deliveryLocation || 'Delivery Location';
+        
+        // Determine current location based on status
+        if (parcel.currentStatus === 'DELIVERED') {
+          this.currentLocation = this.deliveryLocation;
+        } else if (parcel.currentStatus === 'IN_TRANSIT') {
+          // For in-transit, we'll use a midpoint or estimate
+          this.currentLocation = 'En route to destination';
+        } else {
+          this.currentLocation = this.pickupLocation;
+        }
         
         // Geocode the places to get coordinates
         this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
         this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
-        this.currentCoordinates = await this.geocodePlace(this.currentLocation);
+        
+        if (parcel.currentStatus === 'IN_TRANSIT') {
+          // For in-transit, create a midpoint between pickup and delivery
+          if (this.pickupCoordinates && this.deliveryCoordinates) {
+            this.currentCoordinates = {
+              lat: (this.pickupCoordinates.lat + this.deliveryCoordinates.lat) / 2,
+              lng: (this.pickupCoordinates.lng + this.deliveryCoordinates.lng) / 2
+            };
+          }
+        } else {
+          this.currentCoordinates = await this.geocodePlace(this.currentLocation);
+        }
 
+        // Create tracking history
         this.history = [
-          { date: '2024-01-20', status: 'Created', location: this.pickupLocation },
-          { date: '2024-01-21', status: 'Picked Up', location: this.pickupLocation },
-          { date: '2024-01-22', status: 'In Transit', location: this.currentLocation },
-          { date: '2024-01-23', status: 'Out for Delivery', location: 'Near ' + this.deliveryLocation }
+          { 
+            date: new Date(parcel.createdAt).toLocaleDateString(), 
+            status: 'Created', 
+            location: this.pickupLocation 
+          }
         ];
 
-        await this.updateMap();
-        
-      } else if (this.trackingNumber === 'SEND789012') {
-        // Another example with different locations
-        this.found = true;
-        this.status = 'Delivered';
-        
-        this.pickupLocation = 'University of Nairobi, Kenya';
-        this.deliveryLocation = 'Kenyatta University, Kenya';
-        this.currentLocation = this.deliveryLocation;
-        
-        this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
-        this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
-        this.currentCoordinates = this.deliveryCoordinates;
-
-        this.history = [
-          { date: '2024-01-18', status: 'Created', location: this.pickupLocation },
-          { date: '2024-01-19', status: 'Picked Up', location: this.pickupLocation },
-          { date: '2024-01-19', status: 'Out for Delivery', location: 'En route to ' + this.deliveryLocation },
-          { date: '2024-01-20', status: 'Delivered', location: this.deliveryLocation }
-        ];
+        // Add status-specific history entries
+        if (parcel.currentStatus !== 'PENDING') {
+          this.history.push({
+            date: new Date(parcel.updatedAt).toLocaleDateString(),
+            status: this.formatStatus(parcel.currentStatus),
+            location: parcel.currentStatus === 'DELIVERED' ? this.deliveryLocation : this.currentLocation
+          });
+        }
 
         await this.updateMap();
-        
       } else {
-        this.found = false;
-        this.status = '';
-        this.history = [];
-        this.pickupCoordinates = null;
-        this.deliveryCoordinates = null;
-        this.currentCoordinates = null;
-        this.mapLayers = [];
+        // Fallback to mock data for demonstration
+        await this.loadMockData();
       }
     } catch (error) {
       console.error('Error tracking parcel:', error);
+      // Fallback to mock data if API fails
+      await this.loadMockData();
     } finally {
       this.loading = false;
+    }
+  }
+
+  private async loadMockData() {
+    // Mock tracking logic with real places for demonstration
+    if (this.trackingNumber === 'SEND123456') {
+      this.found = true;
+      this.status = 'In Transit';
+      
+      this.pickupLocation = 'KICC, Nairobi, Kenya';
+      this.deliveryLocation = 'Fort Jesus, Mombasa, Kenya';
+      this.currentLocation = 'Nakuru Town, Kenya';
+      
+      this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
+      this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
+      this.currentCoordinates = await this.geocodePlace(this.currentLocation);
+
+      this.history = [
+        { date: '2024-01-20', status: 'Created', location: this.pickupLocation },
+        { date: '2024-01-21', status: 'Picked Up', location: this.pickupLocation },
+        { date: '2024-01-22', status: 'In Transit', location: this.currentLocation },
+        { date: '2024-01-23', status: 'Out for Delivery', location: 'Near ' + this.deliveryLocation }
+      ];
+
+      await this.updateMap();
+      
+    } else if (this.trackingNumber === 'SEND789012') {
+      this.found = true;
+      this.status = 'Delivered';
+      
+      this.pickupLocation = 'University of Nairobi, Kenya';
+      this.deliveryLocation = 'Kenyatta University, Kenya';
+      this.currentLocation = this.deliveryLocation;
+      
+      this.pickupCoordinates = await this.geocodePlace(this.pickupLocation);
+      this.deliveryCoordinates = await this.geocodePlace(this.deliveryLocation);
+      this.currentCoordinates = this.deliveryCoordinates;
+
+      this.history = [
+        { date: '2024-01-18', status: 'Created', location: this.pickupLocation },
+        { date: '2024-01-19', status: 'Picked Up', location: this.pickupLocation },
+        { date: '2024-01-19', status: 'Out for Delivery', location: 'En route to ' + this.deliveryLocation },
+        { date: '2024-01-20', status: 'Delivered', location: this.deliveryLocation }
+      ];
+
+      await this.updateMap();
+      
+    } else {
+      this.found = false;
+    }
+  }
+
+  private formatStatus(status: string): string {
+    switch (status) {
+      case 'PENDING': return 'Pending';
+      case 'IN_TRANSIT': return 'In Transit';
+      case 'DELIVERED': return 'Delivered';
+      case 'CANCELLED': return 'Cancelled';
+      default: return status;
     }
   }
 
