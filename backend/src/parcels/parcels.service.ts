@@ -82,12 +82,78 @@ export class ParcelsService {
 
   // Get parcels sent by a user
   async getSentParcels(userId: string) {
-    return this.prisma.parcel.findMany({ where: { senderId: userId } });
+    console.log('Getting sent parcels for user ID:', userId);
+    
+    const parcels = await this.prisma.parcel.findMany({ 
+      where: { senderId: userId },
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true
+      }
+    });
+
+    console.log('Raw parcels from database:', parcels);
+
+    const formattedParcels = parcels.map(parcel => ({
+      id: parcel.id,
+      trackingNumber: parcel.id, // Use ID as tracking number
+      senderName: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
+      senderEmail: parcel.sender?.email,
+      receiverName: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
+      receiverEmail: parcel.receiver?.email,
+      pickupAddress: parcel.pickupLocation?.address || 'Pickup Address',
+      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Address',
+      weight: parcel.weight,
+      weightCategory: this.getWeightCategory(parcel.weight),
+      status: parcel.currentStatus,
+      price: parcel.price,
+      createdAt: parcel.createdAt,
+      updatedAt: parcel.updatedAt,
+      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus)
+    }));
+
+    console.log('Formatted sent parcels:', formattedParcels);
+    return formattedParcels;
   }
 
   // Get parcels received by a user
   async getReceivedParcels(userId: string) {
-    return this.prisma.parcel.findMany({ where: { receiverId: userId } });
+    console.log('Getting received parcels for user ID:', userId);
+    
+    const parcels = await this.prisma.parcel.findMany({ 
+      where: { receiverId: userId },
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true
+      }
+    });
+
+    console.log('Raw received parcels from database:', parcels);
+
+    const formattedParcels = parcels.map(parcel => ({
+      id: parcel.id,
+      trackingNumber: parcel.id, // Use ID as tracking number
+      senderName: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
+      senderEmail: parcel.sender?.email,
+      receiverName: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
+      receiverEmail: parcel.receiver?.email,
+      pickupAddress: parcel.pickupLocation?.address || 'Pickup Address',
+      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Address',
+      weight: parcel.weight,
+      weightCategory: this.getWeightCategory(parcel.weight),
+      status: parcel.currentStatus,
+      price: parcel.price,
+      createdAt: parcel.createdAt,
+      updatedAt: parcel.updatedAt,
+      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus)
+    }));
+
+    console.log('Formatted received parcels:', formattedParcels);
+    return formattedParcels;
   }
 
   // Get parcels assigned to a courier
@@ -147,7 +213,8 @@ export class ParcelsService {
       price: parcel.price,
       createdAt: parcel.createdAt,
       updatedAt: parcel.updatedAt,
-      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null
+      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null,
+      courierId: parcel.courierId || null
     };
   }
 
@@ -212,5 +279,30 @@ export class ParcelsService {
       },
       orderBy: { updatedAt: 'desc' },
     });
+  }
+
+  // Helper method to determine weight category
+  private getWeightCategory(weight: number): string {
+    if (weight <= 1) return 'LIGHT';
+    if (weight <= 5) return 'MEDIUM';
+    return 'HEAVY';
+  }
+
+  // Helper method to calculate estimated delivery date
+  private calculateEstimatedDelivery(createdAt: Date, status: string): Date {
+    const created = new Date(createdAt);
+    let estimatedDays = 3; // Default 3 days for standard delivery
+    
+    if (status === 'DELIVERED') {
+      estimatedDays = 0;
+    } else if (status === 'IN_TRANSIT') {
+      estimatedDays = 1;
+    } else if (status === 'PICKED_UP') {
+      estimatedDays = 2;
+    }
+    
+    const estimated = new Date(created);
+    estimated.setDate(estimated.getDate() + estimatedDays);
+    return estimated;
   }
 }
