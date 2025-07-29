@@ -115,17 +115,34 @@
           </div>
 
           <div class="form-group">
-            <label for="senderAddress" class="form-label">Pickup Address *</label>
-            <textarea
-              id="senderAddress"
-              formControlName="senderAddress"
-              class="form-textarea"
-              [class.error]="isFieldInvalid('senderAddress')"
-              placeholder="Enter complete pickup address"
-              rows="3"
-            ></textarea>
-            <div class="error-message" *ngIf="isFieldInvalid('senderAddress')">
-              {{ getFieldError('senderAddress') }}
+            <label for="senderCounty" class="form-label">Sender County *</label>
+            <input
+              type="text"
+              id="senderCounty"
+              formControlName="senderCounty"
+              class="form-input"
+              [class.error]="isFieldInvalid('senderCounty')"
+              placeholder="Enter sender county (e.g., Nairobi, Mombasa)"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('senderCounty')">
+              {{ getFieldError('senderCounty') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="senderTown" class="form-label">Sender Town/City *</label>
+            <input
+              type="text"
+              id="senderTown"
+              formControlName="senderTown"
+              class="form-input"
+              [class.error]="isFieldInvalid('senderTown')"
+              placeholder="Enter sender town or city (e.g., Westlands, CBD)"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('senderTown')">
+              {{ getFieldError('senderTown') }}
             </div>
           </div>
         </div>
@@ -192,17 +209,34 @@
           </div>
 
           <div class="form-group">
-            <label for="receiverAddress" class="form-label">Delivery Address *</label>
-            <textarea
-              id="receiverAddress"
-              formControlName="receiverAddress"
-              class="form-textarea"
-              [class.error]="isFieldInvalid('receiverAddress')"
-              placeholder="Enter complete delivery address"
-              rows="3"
-            ></textarea>
-            <div class="error-message" *ngIf="isFieldInvalid('receiverAddress')">
-              {{ getFieldError('receiverAddress') }}
+            <label for="receiverCounty" class="form-label">Receiver County *</label>
+            <input
+              type="text"
+              id="receiverCounty"
+              formControlName="receiverCounty"
+              class="form-input"
+              [class.error]="isFieldInvalid('receiverCounty')"
+              placeholder="Enter receiver county (e.g., Nairobi, Mombasa)"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('receiverCounty')">
+              {{ getFieldError('receiverCounty') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="receiverTown" class="form-label">Receiver Town/City *</label>
+            <input
+              type="text"
+              id="receiverTown"
+              formControlName="receiverTown"
+              class="form-input"
+              [class.error]="isFieldInvalid('receiverTown')"
+              placeholder="Enter receiver town or city (e.g., Westlands, CBD)"
+            >
+            <div class="error-message" *ngIf="isFieldInvalid('receiverTown')">
+              {{ getFieldError('receiverTown') }}
             </div>
           </div>
         </div>

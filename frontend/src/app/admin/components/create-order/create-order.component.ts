@@ -42,13 +42,15 @@ export class CreateOrderComponent implements OnInit {
       senderName: ['', [Validators.required, Validators.minLength(2)]],
       senderEmail: ['', [Validators.required, Validators.email]],
       senderPhone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
-      senderAddress: ['', [Validators.required, Validators.minLength(10)]],
+      senderCounty: ['', [Validators.required, Validators.minLength(2)]],
+      senderTown: ['', [Validators.required, Validators.minLength(2)]],
 
       // Receiver Information
       receiverName: ['', [Validators.required, Validators.minLength(2)]],
       receiverEmail: ['', [Validators.required, Validators.email]],
       receiverPhone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
-      receiverAddress: ['', [Validators.required, Validators.minLength(10)]],
+      receiverCounty: ['', [Validators.required, Validators.minLength(2)]],
+      receiverTown: ['', [Validators.required, Validators.minLength(2)]],
 
       // Package Details
       packageDescription: ['', [Validators.required, Validators.minLength(5)]],
@@ -144,38 +146,42 @@ export class CreateOrderComponent implements OnInit {
       this.errorMessage = '';
       this.successMessage = '';
 
+      // Construct addresses from county and town
+      const senderAddress = `${this.orderForm.value.senderTown}, ${this.orderForm.value.senderCounty} County, Kenya`;
+      const receiverAddress = `${this.orderForm.value.receiverTown}, ${this.orderForm.value.receiverCounty} County, Kenya`;
+
       // Prepare parcel data for API - the backend will handle user and location creation
       const parcelData = {
         senderName: this.orderForm.value.senderName,
         senderEmail: this.orderForm.value.senderEmail,
         senderPhone: this.orderForm.value.senderPhone,
-        senderAddress: this.orderForm.value.senderAddress,
+        senderAddress: senderAddress,
         receiverName: this.orderForm.value.receiverName,
         receiverEmail: this.orderForm.value.receiverEmail,
         receiverPhone: this.orderForm.value.receiverPhone,
-        receiverAddress: this.orderForm.value.receiverAddress,
+        receiverAddress: receiverAddress,
         weight: this.orderForm.value.weight,
         price: this.calculatePrice()
       };
 
       console.log('Creating parcel:', parcelData);
       
-              this.adminService.createParcel(parcelData).subscribe({
-          next: (response: any) => {
-            this.isLoading = false;
-            this.successMessage = `Parcel created successfully! Tracking ID: ${response.id}`;
-            
-            // Redirect to dashboard after 2 seconds
-            setTimeout(() => {
-              this.router.navigate(['/admin/dashboard']);
-            }, 2000);
-          },
-          error: (error) => {
-            this.isLoading = false;
-            this.errorMessage = error.error?.message || 'Failed to create parcel. Please try again.';
-            console.error('Error creating parcel:', error);
-          }
-        });
+      this.adminService.createParcel(parcelData).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          this.successMessage = `Parcel created successfully! Tracking ID: ${response.id}`;
+          
+          // Redirect to dashboard after 2 seconds
+          setTimeout(() => {
+            this.router.navigate(['/admin/dashboard']);
+          }, 2000);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = error.error?.message || 'Failed to create parcel. Please try again.';
+          console.error('Error creating parcel:', error);
+        }
+      });
     } else {
       this.markFormGroupTouched();
     }
