@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { DeliveryStatusEnum } from '@prisma/client';
+import { CloudinaryService, SenditUploadType } from '../shared/utils/cloudinary/cloudinary.service';
 
 export type User = NonNullable<
   Awaited<ReturnType<PrismaClient['user']['findUnique']>>
@@ -12,6 +13,8 @@ export type User = NonNullable<
 @Injectable()
 export class UsersService {
   private prisma = new PrismaClient();
+
+  constructor(private cloudinaryService: CloudinaryService) {}
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { email } });
@@ -44,6 +47,88 @@ export class UsersService {
     });
   }
 
+  async updateProfile(userId: string, data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  }): Promise<User> {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if email is being updated and if it's already taken
+    if (data.email && data.email !== user.email) {
+      const existingUser = await this.findByEmail(data.email);
+      if (existingUser) {
+        throw new BadRequestException('Email already exists');
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+      },
+    });
+  }
+
+  async uploadProfileImage(userId: string, file: Express.Multer.File): Promise<{ imageUrl: string }> {
+    console.log('Starting upload for user:', userId);
+    console.log('File received:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
+
+    const user = await this.findOne(userId);
+    if (!user) {
+      console.error('User not found:', userId);
+      throw new NotFoundException('User not found');
+    }
+
+    console.log('User found, uploading to Cloudinary...');
+
+    // Upload to Cloudinary
+    const uploadResult = await this.cloudinaryService.uploadFile(
+      file,
+      SenditUploadType.USER_PROFILE,
+      userId
+    );
+
+    console.log('Cloudinary upload successful:', uploadResult);
+
+    // Update user profile with new image URL
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { profileImage: uploadResult.secure_url },
+    });
+
+    console.log('User profile updated with new image URL');
+
+    return { imageUrl: uploadResult.secure_url };
+  }
+
+  async deleteProfileImage(userId: string): Promise<void> {
+    const user = await this.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.profileImage) {
+      // Extract public_id from URL if needed for Cloudinary deletion
+      // For now, just remove the image URL from database
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { profileImage: null },
+      });
+    }
+  }
+
   async getAssignedParcels(courierId: string) {
     // Use valid field for courier assignment if available in schema
     return this.prisma.parcel.findMany({ where: { courierId } });
@@ -67,6 +152,4 @@ export class UsersService {
     });
     return updatedParcel;
   }
-
-
 }

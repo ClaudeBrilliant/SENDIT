@@ -1,9 +1,20 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MulterModule } from '@nestjs/platform-express';
+import { AuthModule } from '../auth/auth.module';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
+import { CloudinaryService } from '../shared/utils/cloudinary/cloudinary.service';
 
 @Module({
-  providers: [UsersService],
+  imports: [
+    ConfigModule,
+    MulterModule.register({
+      storage: undefined, // We'll use Cloudinary directly
+    }),
+    forwardRef(() => AuthModule),
+  ],
+  providers: [UsersService, CloudinaryService],
   controllers: [UsersController],
   exports: [UsersService],
 })
