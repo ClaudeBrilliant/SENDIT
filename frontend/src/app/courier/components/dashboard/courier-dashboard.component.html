@@ -4,10 +4,19 @@
     <div class="header-content">
       <div class="user-info">
         <div class="user-avatar">
-          <img [src]="courier.avatar" [alt]="courier.name">
+          <!-- Show profile image if available, otherwise show initials -->
+          <img *ngIf="hasProfileImage()" 
+               [src]="courier.profileImage" 
+               [alt]="courier.firstName + ' ' + courier.lastName"
+               class="profile-image">
+          <div *ngIf="!hasProfileImage()" 
+               class="profile-initials"
+               [style.background-color]="getAvatarColor()">
+            {{getCourierInitials()}}
+          </div>
         </div>
         <div class="user-details">
-          <h1 class="welcome-text">Welcome, {{courier.name}}!</h1>
+          <h1 class="welcome-text">Welcome, {{courier.firstName}} {{courier.lastName}}!</h1>
           <p class="user-email">{{courier.email}}</p>
         </div>
       </div>
@@ -17,6 +26,7 @@
         </div>
         <button class="btn btn-primary" (click)="switchTab('assigned')">Assigned Parcels</button>
         <button class="btn btn-secondary" (click)="switchTab('history')">Delivery History</button>
+        <button class="btn btn-ghost" (click)="openProfileModal()">Profile</button>
         <button class="btn btn-ghost">Logout</button>
       </div>
     </div>
@@ -195,6 +205,14 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeProfileModal()">&times;</button>
+      <app-profile></app-profile>
     </div>
   </div>
 </div> 

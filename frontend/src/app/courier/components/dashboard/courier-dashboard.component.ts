@@ -2,20 +2,25 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ProfileComponent } from '../../../user/components/profile/profile.component';
 
 @Component({
   selector: 'app-courier-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ProfileComponent],
   templateUrl: './courier-dashboard.component.html',
   styleUrls: ['./courier-dashboard.component.css']
 })
 export class CourierDashboardComponent implements OnInit {
   courier = {
     id: '',
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    avatar: '/assets/default-avatar.png',
+    profileImage: '',
+    role: '',
+    createdAt: '',
+    updatedAt: ''
   };
 
   stats = {
@@ -45,6 +50,30 @@ export class CourierDashboardComponent implements OnInit {
     { value: 'CANCELLED', label: 'Cancelled' }
   ];
 
+  showProfileModal = false;
+
+  openProfileModal(): void {
+    this.showProfileModal = true;
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+    // Reload courier info from localStorage in case profile image was updated
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user && user.role === 'COURIER') {
+      this.courier = {
+        id: user.id,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email,
+        profileImage: user.profileImage || '',
+        role: user.role || '',
+        createdAt: user.createdAt || '',
+        updatedAt: user.updatedAt || ''
+      };
+    }
+  }
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -53,14 +82,35 @@ export class CourierDashboardComponent implements OnInit {
     if (user && user.role === 'COURIER') {
       this.courier = {
         id: user.id,
-        name: user.firstName ? user.firstName + ' ' + (user.lastName || '') : user.name || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         email: user.email,
-        avatar: user.avatar || '/assets/default-avatar.png',
+        profileImage: user.profileImage || '',
+        role: user.role || '',
+        createdAt: user.createdAt || '',
+        updatedAt: user.updatedAt || ''
       };
       this.fetchAssignedParcels();
       this.fetchDeliveryHistory();
       this.startLocationTracking(); // Start tracking courier location
     }
+  }
+
+  getCourierInitials(): string {
+    const firstName = this.courier.firstName || '';
+    const lastName = this.courier.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  }
+
+  getAvatarColor(): string {
+    if (!this.courier.id) return '#FB9F3E';
+    const colors = ['#FB9F3E', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+    const index = this.courier.id.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  hasProfileImage(): boolean {
+    return !!this.courier.profileImage;
   }
 
   fetchAssignedParcels() {
