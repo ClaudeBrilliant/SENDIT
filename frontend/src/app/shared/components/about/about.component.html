@@ -69,10 +69,13 @@
       </div>
 
       <div class="values-grid">
-        <div
-          *ngFor="let value of values"
-          class="value-card"
-        >
+        <div *ngFor="let value of values; let i = index" class="value-card flex flex-col items-center text-center">
+          <ng-container [ngSwitch]="i">
+            <svg *ngSwitchCase="0" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4" stroke="currentColor"/><circle cx="12" cy="12" r="8" stroke="currentColor"/><path d="M12 16v2" stroke="currentColor"/><path d="M8 12h8" stroke="currentColor"/><path d="M12 8v4" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="1" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor"/><path d="M8 12l2 2 4-4" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="2" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C7 2 2 7 2 12c0 5 5 10 10 10s10-5 10-10c0-5-5-10-10-10z" stroke="currentColor"/><path d="M12 6v6l4 2" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="3" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21C7.5 17.5 4 14.36 4 10.5A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 8 4.5c0 3.86-3.5 7-8 10.5z" stroke="currentColor"/></svg>
+          </ng-container>
           <h3 class="value-title">{{ value.title }}</h3>
           <p class="value-description">{{ value.description }}</p>
         </div>
@@ -146,10 +149,13 @@
       </div>
 
       <div class="achievements-grid">
-        <div
-          *ngFor="let achievement of achievements"
-          class="achievement-card"
-        >
+        <div *ngFor="let achievement of achievements; let i = index" class="achievement-card flex flex-col items-center text-center">
+          <ng-container [ngSwitch]="i">
+            <svg *ngSwitchCase="0" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="1" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor"/><path d="M12 17l-5-5h10l-5 5z" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="2" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor"/><path d="M2 12h20" stroke="currentColor"/><path d="M12 2v20" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="3" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor"/><path d="M8 12l2 2 4-4" stroke="currentColor"/></svg>
+          </ng-container>
           <h3 class="achievement-title">{{ achievement.title }}</h3>
           <p class="achievement-description">{{ achievement.description }}</p>
         </div>
