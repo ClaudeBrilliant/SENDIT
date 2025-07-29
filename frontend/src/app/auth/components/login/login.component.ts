@@ -43,14 +43,8 @@ export class LoginComponent {
           if (res && res.access_token) {
             localStorage.setItem('access_token', res.access_token);
             localStorage.setItem('user', JSON.stringify(res.user));
-            // Route based on user role
-            if (res.user && res.user.role === 'ADMIN') {
-              this.router.navigate(['/admin/dashboard']);
-            } else if (res.user && res.user.role === 'COURIER') {
-              this.router.navigate(['/courier/dashboard']);
-            } else {
-              this.router.navigate(['/user/dashboard']);
-            }
+            // Redirect to homepage after successful login
+            this.router.navigate(['/']);
           } else {
             this.errorMessage = 'Unexpected response from server.';
           }
