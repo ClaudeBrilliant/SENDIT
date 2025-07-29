@@ -20,6 +20,23 @@ export class ParcelsController {
     return this.parcelsService.getReceivedParcels(userId);
   }
 
+  @Get('user/sent')
+  async getUserSentParcels(@Query('userId') userId: string) {
+    return this.parcelsService.getSentParcels(userId);
+  }
+
+  @Get('user/received')
+  async getUserReceivedParcels(@Query('userId') userId: string) {
+    return this.parcelsService.getReceivedParcels(userId);
+  }
+
+  @Get('user/all')
+  async getUserAllParcels(@Query('userId') userId: string) {
+    const sentParcels = await this.parcelsService.getSentParcels(userId);
+    const receivedParcels = await this.parcelsService.getReceivedParcels(userId);
+    return [...sentParcels, ...receivedParcels];
+  }
+
   @Get('assigned')
   async getAssignedParcels(@Query('courierId') courierId: string) {
     return this.parcelsService.getAssignedParcels(courierId);
