@@ -65,33 +65,16 @@
       </div>
 
       <div class="additional-services-grid">
-        <div
-          *ngFor="let service of additionalServices"
-          class="additional-service-card"
-        >
+        <div *ngFor="let service of additionalServices; let i = index" class="additional-service-card flex flex-col items-center text-center">
+          <ng-container [ngSwitch]="i">
+            <svg *ngSwitchCase="0" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4" stroke="currentColor"/><path d="M7 9v2a5 5 0 0 0 10 0V9" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="1" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 2v6h6" stroke="currentColor"/><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="2" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"/><path d="M8 2v4M16 2v4M3 10h18" stroke="currentColor"/></svg>
+            <svg *ngSwitchCase="3" class="w-10 h-10 mb-2 text-[#FB9F3E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3" stroke="currentColor"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z" stroke="currentColor"/></svg>
+          </ng-container>
           <h3 class="service-name">{{ service.name }}</h3>
           <p class="service-description">{{ service.description }}</p>
           <span class="service-price">{{ service.price }}</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features-section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Why Choose SendIT?</h2>
-        <p class="section-subtitle">We provide the best delivery experience with cutting-edge technology</p>
-      </div>
-
-      <div class="features-grid">
-        <div
-          *ngFor="let feature of features"
-          class="feature-card"
-        >
-          <h3 class="feature-title">{{ feature.title }}</h3>
-          <p class="feature-description">{{ feature.description }}</p>
         </div>
       </div>
     </div>
