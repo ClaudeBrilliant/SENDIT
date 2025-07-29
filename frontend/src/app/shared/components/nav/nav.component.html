@@ -19,9 +19,17 @@
     </ul>
 
     <div class="nav-actions">
-      <!-- <button class="btn btn-outline" (click)="navigateToDashboard()">Dashboard</button> -->
-      <button class="btn btn-outline" (click)="navigateToLogin()">Login</button>
-      <button class="btn btn-primary" (click)="navigateToSignup()">Sign Up</button>
+      <!-- Show Dashboard button when logged in -->
+      <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="navigateToDashboard()">
+        Dashboard
+      </button>
+      
+      <!-- Show Login/Signup when not logged in -->
+      <button *ngIf="!isLoggedIn" class="btn btn-outline" (click)="navigateToLogin()">Login</button>
+      <button *ngIf="!isLoggedIn" class="btn btn-primary" (click)="navigateToSignup()">Sign Up</button>
+      
+      <!-- Show Logout when logged in -->
+      <button *ngIf="isLoggedIn" class="btn btn-outline" (click)="logout()">Logout</button>
     </div>
 
     <div class="mobile-menu-toggle" (click)="toggleMobileMenu()">

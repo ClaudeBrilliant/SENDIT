@@ -17,9 +17,9 @@
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -180,7 +180,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .nav-container {
-    padding: 0 1rem;
+    padding: 0 0.75rem;
   }
 
   .nav-menu {
@@ -242,7 +242,7 @@
 
 @media (max-width: 480px) {
   .nav-container {
-    padding: 0 0.75rem;
+    padding: 0 0.5rem;
   }
 
   .logo-text {
