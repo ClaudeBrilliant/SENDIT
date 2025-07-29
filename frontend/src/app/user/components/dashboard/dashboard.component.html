@@ -16,6 +16,11 @@
             <i class="icon-eye"></i>
             Track Parcel
           </button>
+          <button class="btn btn-secondary" (click)="showAvailableParcelsForTracking()" 
+                  [disabled]="sentParcels.length === 0 && receivedParcels.length === 0">
+            <i class="icon-list"></i>
+            My Parcels
+          </button>
           <div class="user-menu">
             <button class="btn btn-ghost" (click)="openProfileModal()">
               <i class="icon-user"></i>
@@ -28,11 +33,26 @@
           </div>
           <div class="user-info">
             <div class="user-avatar">
-              <img [src]="user?.avatar" [alt]="(user?.firstName || '') + ' ' + (user?.lastName || '')">
+              <!-- Show loading spinner if no user data -->
+              <div *ngIf="!user" class="profile-loading">
+                <div class="loading-spinner-small"></div>
+              </div>
+              <!-- Show profile image if available, otherwise show initials -->
+              <img *ngIf="user && hasProfileImage()" 
+                   [src]="user.profileImage" 
+                   [alt]="(user.firstName || '') + ' ' + (user.lastName || '')"
+                   class="profile-image">
+              <div *ngIf="user && !hasProfileImage()" 
+                   class="profile-initials"
+                   [style.background-color]="getAvatarColor()">
+                {{getUserInitials()}}
+              </div>
             </div>
             <div class="user-details">
-              <h1 class="welcome-text">{{user?.firstName}}!</h1>
-              <p class="user-email">{{user?.email}}</p>
+              <h1 class="welcome-text" *ngIf="user">{{user.firstName}}!</h1>
+              <h1 class="welcome-text" *ngIf="!user">Welcome!</h1>
+              <p class="user-email" *ngIf="user">{{user.email}}</p>
+              <p class="user-email" *ngIf="!user">Loading...</p>
             </div>
           </div>
         </div>
@@ -392,16 +412,6 @@
           <i class="icon-x"></i>
         </button>
         <app-profile></app-profile>
-      </div>
-    </div>
-
-    <!-- Track Parcel Modal -->
-    <div class="modal-overlay" *ngIf="showTrackParcelModal" (click)="closeTrackParcelModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="closeTrackParcelModal()">
-          <i class="icon-x"></i>
-        </button>
-        <app-track-parcel></app-track-parcel>
       </div>
     </div>
 </div>

@@ -4,7 +4,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProfileComponent } from "../profile/profile.component";
-import { TrackParcelComponent } from "./../track-parcel/track-parcel.component";
 import { UserDashboardService } from '../../services/user-dashboard.service';
 
 // Interfaces
@@ -33,8 +32,11 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
-  avatar?: string;
+  phone: string;
+  profileImage?: string;
+  role?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DashboardState {
@@ -52,7 +54,7 @@ export interface DashboardState {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ProfileComponent, TrackParcelComponent],
+  imports: [CommonModule, ReactiveFormsModule, ProfileComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -93,7 +95,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   ];
 
   showProfileModal = false;
-  showTrackParcelModal = false;
 
   openProfileModal(): void {
     this.showProfileModal = true;
@@ -101,14 +102,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   closeProfileModal(): void {
     this.showProfileModal = false;
-  }
-
-  openTrackParcelModal(): void {
-    this.showTrackParcelModal = true;
-  }
-
-  closeTrackParcelModal(): void {
-    this.showTrackParcelModal = false;
   }
 
   constructor(
@@ -121,18 +114,58 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    console.log('User from localStorage:', user);
+    
     if (user && user.id) {
       this.loading = true;
-      this.dashboardService.getUserInfo(user.id).subscribe((userData: any) => {
-        this.user = userData;
+      console.log('Loading data for user ID:', user.id);
+      
+      this.dashboardService.getUserInfo(user.id).subscribe({
+        next: (userData: any) => {
+          console.log('User data loaded:', userData);
+          this.user = userData;
+        },
+        error: (error) => {
+          console.error('Error loading user info:', error);
+          // Fallback to localStorage data if API call fails
+          this.user = {
+            id: user.id,
+            firstName: user.firstName || user.name?.split(' ')[0] || '',
+            lastName: user.lastName || user.name?.split(' ').slice(1).join(' ') || '',
+            email: user.email,
+            phone: user.phone || '',
+            profileImage: user.profileImage,
+            role: user.role || 'USER',
+            createdAt: user.createdAt || new Date().toISOString(),
+            updatedAt: user.updatedAt || new Date().toISOString()
+          };
+        }
       });
-      this.dashboardService.getSentParcels(user.id).subscribe((parcels: any) => {
-        this.sentParcels = parcels;
-        this.loading = false;
+      
+      this.dashboardService.getSentParcels(user.id).subscribe({
+        next: (parcels: any) => {
+          console.log('Sent parcels loaded:', parcels);
+          this.sentParcels = parcels;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading sent parcels:', error);
+          this.loading = false;
+        }
       });
-      this.dashboardService.getReceivedParcels(user.id).subscribe((parcels: any) => {
-        this.receivedParcels = parcels;
+      
+      this.dashboardService.getReceivedParcels(user.id).subscribe({
+        next: (parcels: any) => {
+          console.log('Received parcels loaded:', parcels);
+          this.receivedParcels = parcels;
+        },
+        error: (error) => {
+          console.error('Error loading received parcels:', error);
+        }
       });
+    } else {
+      console.error('No user found in localStorage or user ID is missing');
+      console.log('localStorage user:', localStorage.getItem('user'));
     }
   }
 
@@ -200,9 +233,30 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   trackParcel(trackingNumber?: string): void {
     if (trackingNumber) {
-      // Optionally handle tracking number logic
+      // Navigate to track parcel page with the tracking number
+      this.router.navigate(['/user/track-parcel'], { 
+        queryParams: { tracking: trackingNumber } 
+      });
+    } else {
+      // Navigate to track parcel page without tracking number
+      this.router.navigate(['/user/track-parcel']);
     }
-    this.openTrackParcelModal();
+  }
+
+  // Show available parcels for tracking
+  showAvailableParcelsForTracking(): void {
+    const allParcels = [...this.sentParcels, ...this.receivedParcels];
+    if (allParcels.length > 0) {
+      // Navigate to track parcel page with a list of available tracking numbers
+      const trackingNumbers = allParcels.map(p => p.trackingNumber).join(',');
+      this.router.navigate(['/user/track-parcel'], { 
+        queryParams: { available: trackingNumbers } 
+      });
+    } else {
+      // No parcels available, show a message and navigate to track parcel page
+      alert('You don\'t have any parcels to track yet. You can enter a tracking number manually.');
+      this.router.navigate(['/user/track-parcel']);
+    }
   }
 
   createNewParcel(): void {
@@ -307,5 +361,24 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   trackByParcelId(index: number, parcel: Parcel): string {
     return parcel.id;
+  }
+
+  // User Avatar Helper Methods
+  getUserInitials(): string {
+    if (!this.user) return '';
+    const firstName = this.user.firstName || '';
+    const lastName = this.user.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  }
+
+  getAvatarColor(): string {
+    if (!this.user) return '#FB9F3E';
+    const colors = ['#FB9F3E', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+    const index = this.user.id.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  hasProfileImage(): boolean {
+    return !!(this.user?.profileImage);
   }
 }

@@ -1,39 +1,162 @@
-<app-nav></app-nav>
 <div class="track-parcel-container">
-  <h2>Track Your Parcel</h2>
-  <form (ngSubmit)="track()" class="track-form">
-    <input type="text" [(ngModel)]="trackingNumber" name="trackingNumber" placeholder="Enter tracking number (Try: SEND123456 or SEND789012)" required>
-    <button class="btn btn-primary" type="submit" [disabled]="loading">
-      <span *ngIf="loading">Loading...</span>
-      <span *ngIf="!loading">Track</span>
+  <!-- Back to Dashboard Button -->
+  <div class="back-to-dashboard">
+    <button class="back-btn" (click)="goBackToDashboard()">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M19 12H5"/>
+        <path d="M12 19l-7-7 7-7"/>
+      </svg>
+      Back to Dashboard
     </button>
-  </form>
-  
-  <div *ngIf="found" class="status-section">
-    <div class="status-header">
-      <h3>Status: <span class="status-value" [class.delivered]="status === 'Delivered'">{{status}}</span></h3>
-      <div class="tracking-number">Tracking #: {{trackingNumber}}</div>
-    </div>
+  </div>
+
+  <div class="track-header">
+    <h2>Track Parcel</h2>
+    <p class="track-subtitle">Enter a tracking number to view parcel details and location</p>
+  </div>
+
+  <!-- Tracking Form -->
+  <div class="track-form-section">
+    <form (ngSubmit)="track()" class="track-form">
+      <div class="form-group">
+        <label for="trackingNumber">Tracking Number</label>
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="trackingNumber"
+            [(ngModel)]="trackingNumber" 
+            name="trackingNumber" 
+            placeholder="Enter tracking number (e.g., parcel ID)"
+            class="form-input"
+            required>
+          <button class="btn btn-primary" type="submit" [disabled]="loading || !trackingNumber">
+            <svg *ngIf="!loading" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <div *ngIf="loading" class="loading-spinner"></div>
+            <span *ngIf="!loading">Track</span>
+            <span *ngIf="loading">Tracking...</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Available Parcels for Testing -->
+  <div *ngIf="sentParcels.length > 0 || receivedParcels.length > 0" class="available-parcels-section">
+    <h4>Your Available Parcels:</h4>
     
-    <!-- Parcel Details -->
-    <div class="parcel-details">
-      <div class="detail-card">
+    <!-- Parcel Type Selector -->
+    <div class="parcel-type-selector">
+      <button 
+        class="type-btn" 
+        [class.active]="showParcelType === 'all'"
+        (click)="onParcelTypeChange('all')">
+        All Parcels ({{sentParcels.length + receivedParcels.length}})
+      </button>
+      <button 
+        class="type-btn" 
+        [class.active]="showParcelType === 'sent'"
+        (click)="onParcelTypeChange('sent')">
+        Sent ({{sentParcels.length}})
+      </button>
+      <button 
+        class="type-btn" 
+        [class.active]="showParcelType === 'received'"
+        (click)="onParcelTypeChange('received')">
+        Received ({{receivedParcels.length}})
+      </button>
+    </div>
+
+    <div class="parcels-dropdown">
+      <select 
+        (change)="onParcelSelect($event)" 
+        class="form-select"
+        [value]="trackingNumber">
+        <option value="">Select a parcel to track...</option>
+        <option *ngFor="let parcel of availableParcels" [value]="parcel.id">
+          {{ parcel.trackingNumber }} - {{ parcel.senderName }} → {{ parcel.receiverName }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- No Available Parcels Message -->
+  <div *ngIf="sentParcels.length === 0 && receivedParcels.length === 0" class="no-parcels-message">
+    <p>You don't have any parcels yet. You can enter a tracking number manually below.</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Parcel Found Section -->
+  <div *ngIf="found && parcelDetails" class="parcel-details-section">
+    <!-- Status Header -->
+    <div class="status-header">
+      <div class="status-info">
+        <h3>Status: <span class="status-value" [class.delivered]="status === 'Delivered'">{{ status }}</span></h3>
+        <div class="tracking-number">Tracking #: {{ trackingNumber }}</div>
+        <div *ngIf="status === 'In Transit'" class="location-update-indicator">
+          <span class="pulse-dot"></span>
+          Live Location Updates Active
+        </div>
+      </div>
+      <button class="btn btn-secondary" (click)="clearTracking()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Clear
+      </button>
+    </div>
+
+    <!-- Parcel Information -->
+    <div class="parcel-info-grid">
+      <div class="info-card">
         <h4>Parcel Information</h4>
-        <div class="detail-row">
+        <div class="info-row">
           <span class="label">Sender:</span>
-          <span class="value">{{pickupLocation}}</span>
+          <span class="value">{{ parcelDetails.sender }}</span>
         </div>
-        <div class="detail-row">
+        <div class="info-row">
           <span class="label">Receiver:</span>
-          <span class="value">{{deliveryLocation}}</span>
+          <span class="value">{{ parcelDetails.receiver }}</span>
         </div>
-        <div class="detail-row" *ngIf="currentLocation && status !== 'Delivered'">
-          <span class="label">Current Location:</span>
-          <span class="value">{{currentLocation}}</span>
+        <div class="info-row">
+          <span class="label">Weight:</span>
+          <span class="value">{{ parcelDetails.weight }} kg</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Price:</span>
+          <span class="value">KSh {{ parcelDetails.price | number:'1.2-2' }}</span>
+        </div>
+        <div class="info-row" *ngIf="parcelDetails.courier">
+          <span class="label">Courier:</span>
+          <span class="value">{{ parcelDetails.courier }}</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h4>Location Details</h4>
+        <div class="info-row">
+          <span class="label">Pickup:</span>
+          <span class="value">{{ pickupLocation }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Delivery:</span>
+          <span class="value">{{ deliveryLocation }}</span>
+        </div>
+        <div class="info-row current-location-row" *ngIf="currentLocation && status !== 'Delivered'">
+          <span class="label">Current:</span>
+          <span class="value current-location-value">📍 {{ currentLocation }}</span>
         </div>
       </div>
     </div>
-    
+
     <!-- Timeline -->
     <div class="timeline-section">
       <h4>Tracking History</h4>
@@ -43,17 +166,27 @@
              [class.completed]="!last || status === 'Delivered'">
           <div class="timeline-marker"></div>
           <div class="timeline-content">
-            <div class="timeline-date">{{event.date}}</div>
-            <div class="timeline-status">{{event.status}}</div>
-            <div class="timeline-location" *ngIf="event.location">📍 {{event.location}}</div>
+            <div class="timeline-date">{{ event.date }}</div>
+            <div class="timeline-status">{{ event.status }}</div>
+            <div class="timeline-location" *ngIf="event.location">📍 {{ event.location }}</div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Map Section -->
     <div class="map-section" *ngIf="pickupCoordinates && deliveryCoordinates">
       <h4>Route Map</h4>
+      
+      <!-- Debug Info (remove in production) -->
+     <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 5px; font-size: 12px;">
+ <strong>Debug Info:</strong><br>
+ Pickup: {{ pickupCoordinates.lat }}, {{ pickupCoordinates.lng }}<br>
+ Delivery: {{ deliveryCoordinates.lat }}, {{ deliveryCoordinates.lng }}<br>
+ Current: {{ currentCoordinates?.lat }}, {{ currentCoordinates?.lng }}<br>
+ Map Layers: {{ mapLayers.length }}
+</div>
+
       <div class="map-container">
         <div leaflet 
              [leafletOptions]="mapOptions" 
@@ -78,19 +211,22 @@
         </div>
         <div class="legend-item">
           <span class="legend-line" [class.dashed]="status !== 'Delivered'"></span>
-          <span>{{status === 'Delivered' ? 'Completed Route' : 'Planned Route'}}</span>
+          <span>{{ status === 'Delivered' ? 'Completed Route' : 'Planned Route' }}</span>
         </div>
       </div>
     </div>
   </div>
-  
-  <div *ngIf="!found && trackingNumber && !loading">
-    <p class="not-found">❌ No parcel found for tracking number: <strong>{{trackingNumber}}</strong></p>
-    <p class="try-examples">Try these examples: <code>SEND123456</code> or <code>SEND789012</code></p>
-  </div>
-  
-  <div *ngIf="loading" class="loading-indicator">
-    <p>🔍 Searching for your parcel and locating real places...</p>
+
+  <!-- No Parcel Found -->
+  <div *ngIf="!found && trackingNumber && !loading && !error" class="no-parcel">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+    </svg>
+    <h3>Parcel Not Found</h3>
+    <p>No parcel found with tracking number: <strong>{{ trackingNumber }}</strong></p>
+    <p>Please check the tracking number and try again.</p>
   </div>
 </div>
-<app-footer></app-footer>
+
+
+
