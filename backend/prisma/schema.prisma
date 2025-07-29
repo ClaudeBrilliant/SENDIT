@@ -17,6 +17,7 @@ model User {
   phone             String     @unique
   password          String
   role              Role       @default(USER)
+  profileImage      String?    // Cloudinary URL for profile image
   parcelsSent       Parcel[]   @relation("SentParcels")
   parcelsToReceive  Parcel[]   @relation("ReceiveParcels")
   courierParcels    Parcel[]   @relation("CourierParcels")
