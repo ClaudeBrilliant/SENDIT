@@ -94,18 +94,29 @@ export class CloudinaryService {
     if (file.size > config.maxSizeBytes) {
       throw new BadRequestException('File too large');
     }
+    
     const folder = config.folder + (entityId ? `/${entityId}` : '');
-    const result = await cloudinary.uploader.upload_stream({
-      folder,
-      transformation: config.transformations,
-      resource_type: 'auto',
-    }, (error, result) => {
-      if (error || !result) {
-        throw new BadRequestException('Cloudinary upload failed');
-      }
-      return result;
+    
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          transformation: config.transformations,
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) {
+            reject(new BadRequestException('Cloudinary upload failed'));
+          } else if (result) {
+            resolve(result as unknown as CloudinaryUploadResult);
+          } else {
+            reject(new BadRequestException('Cloudinary upload failed'));
+          }
+        }
+      );
+      
+      uploadStream.end(file.buffer);
     });
-    return result as unknown as CloudinaryUploadResult;
   }
 
   async deleteFile(publicId: string): Promise<void> {
