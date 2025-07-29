@@ -11,6 +11,8 @@ import { AboutComponent } from './shared/components/about/about.component';
 import { AdminDashboardComponent } from './admin/components/dashboard/admin-dashboard.component';
 import { CreateOrderComponent } from './admin/components/create-order/create-order.component';
 import { ProfileComponent } from './user/components/profile/profile.component';
+import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
+import { TrackParcelComponent } from './user/components/track-parcel/track-parcel.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -24,7 +26,9 @@ const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'admin/dashboard', component: AdminDashboardComponent },
   { path: 'admin/create-order', component: CreateOrderComponent },
-  { path: 'user/profile', component: ProfileComponent }
+  { path: 'user/profile', component: ProfileComponent },
+  { path: 'user/dashboard', component: UserDashboardComponent },
+  { path: 'user/track-parcel', component: TrackParcelComponent }
 ];
 
 @NgModule({

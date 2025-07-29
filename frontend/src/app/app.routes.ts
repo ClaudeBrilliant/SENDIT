@@ -27,7 +27,7 @@ export const routes: Routes = [
   { path: 'about', component: AboutComponent },
   { path: 'user/dashboard', component: UserDashboardComponent },
   { path: 'user/profile', component: ProfileComponent },
-  { path: 'track-parcel', component: TrackParcelComponent },
+  { path: 'user/track-parcel', component: TrackParcelComponent },
   {
     path: 'courier/dashboard',
     component: CourierDashboardComponent,
