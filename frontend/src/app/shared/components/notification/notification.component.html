@@ -1,0 +1,41 @@
+<div class="notification-container">
+  <div 
+    *ngFor="let notification of notifications" 
+    class="notification-card"
+    [ngClass]="getTypeClass(notification.type)"
+  >
+    <div class="notification-header">
+      <div class="notification-icon">
+        {{ getIcon(notification.type) }}
+      </div>
+      <div class="notification-content">
+        <h4 class="notification-title">{{ notification.title }}</h4>
+        <p class="notification-message">{{ notification.message }}</p>
+      </div>
+      <button 
+        *ngIf="notification.type !== 'confirm'"
+        class="notification-close" 
+        (click)="removeNotification(notification.id)"
+        aria-label="Close notification"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Confirmation buttons for confirm type -->
+    <div *ngIf="notification.type === 'confirm'" class="notification-actions">
+      <button 
+        class="btn btn-cancel" 
+        (click)="onCancel(notification)"
+      >
+        {{ notification.cancelText || 'Cancel' }}
+      </button>
+      <button 
+        class="btn btn-confirm" 
+        (click)="onConfirm(notification)"
+      >
+        {{ notification.confirmText || 'Confirm' }}
+      </button>
+    </div>
+  </div>
+</div> 

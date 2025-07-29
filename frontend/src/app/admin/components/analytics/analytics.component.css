@@ -479,7 +479,6 @@
 
   .location-item {
     flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
 } 

@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProfileComponent } from "../profile/profile.component";
 import { UserDashboardService } from '../../services/user-dashboard.service';
+import { NotificationService } from '../../../shared/services/notification.service';
 
 // Interfaces
 export interface Parcel {
@@ -107,7 +108,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private fb: FormBuilder,
-    private dashboardService: UserDashboardService
+    private dashboardService: UserDashboardService,
+    private notificationService: NotificationService
   ) {
     this.initializeSearchForm();
   }
@@ -254,7 +256,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       });
     } else {
       // No parcels available, show a message and navigate to track parcel page
-      alert('You don\'t have any parcels to track yet. You can enter a tracking number manually.');
+      this.notificationService.info(
+        'No Parcels Available',
+        'You don\'t have any parcels to track yet. You can enter a tracking number manually.'
+      );
       this.router.navigate(['/user/track-parcel']);
     }
   }
@@ -268,9 +273,22 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   cancelParcel(parcelId: string): void {
-    if (confirm('Are you sure you want to cancel this parcel delivery?')) {
-      console.log('Cancelling parcel:', parcelId);
-    }
+    this.notificationService.confirm(
+      'Cancel Parcel Delivery',
+      'Are you sure you want to cancel this parcel delivery?',
+      'Cancel Delivery',
+      'Keep Delivery',
+      () => {
+        console.log('Cancelling parcel:', parcelId);
+        this.notificationService.success(
+          'Parcel Cancelled',
+          'The parcel delivery has been cancelled successfully.'
+        );
+      },
+      () => {
+        console.log('Parcel cancellation cancelled by user');
+      }
+    );
   }
 
   // Utility Methods

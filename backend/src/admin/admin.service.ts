@@ -18,196 +18,54 @@ export class AdminService {
     private prismaService: PrismaService,
   ) {}
 
-  // Create a new parcel
+  // Create parcel
   async createParcel(data: any) {
-    try {
-      console.log('Creating parcel with data:', data);
-      
-      // Format phone numbers (remove spaces, dashes, etc.) and ensure unique format
-      const formatPhone = (phone: string) => {
-        let formatted = phone.replace(/[\s\-\(\)]/g, '');
-        // If it starts with +254, convert to 0 format
-        if (formatted.startsWith('+254')) {
-          formatted = '0' + formatted.substring(4);
-        }
-        // If it starts with 254, convert to 0 format
-        if (formatted.startsWith('254')) {
-          formatted = '0' + formatted.substring(3);
-        }
-        return formatted;
-      };
-      
-      // First, create or find sender user
-      let sender = await this.prisma.user.findFirst({
-        where: { email: data.senderEmail }
-      });
-      
-      if (!sender) {
-        console.log('Creating new sender user');
-        const senderPhone = formatPhone(data.senderPhone);
-        
-        // Check if phone already exists
-        const existingUserWithPhone = await this.prisma.user.findFirst({
-          where: { phone: senderPhone }
-        });
-        
-        if (existingUserWithPhone) {
-          // Use existing user if phone matches
-          sender = existingUserWithPhone;
-          console.log('Using existing user with same phone:', sender.id);
-        } else {
-          sender = await this.prisma.user.create({
-            data: {
-              firstName: data.senderName.split(' ')[0],
-              lastName: data.senderName.split(' ').slice(1).join(' ') || 'Unknown',
-              email: data.senderEmail,
-              phone: senderPhone,
-              password: await bcrypt.hash('defaultPassword123', 10),
-              role: 'USER'
-            }
-          });
-        }
+    const parcel = await this.prisma.parcel.create({
+      data: {
+        senderId: data.senderId,
+        receiverId: data.receiverId,
+        weight: data.weight,
+        price: data.price,
+        pickupLocationId: data.pickupLocationId,
+        deliveryLocationId: data.deliveryLocationId,
+        currentStatus: 'PENDING'
       }
+    });
 
-      // Create or find receiver user
-      let receiver = await this.prisma.user.findFirst({
-        where: { email: data.receiverEmail }
-      });
-      
-      if (!receiver) {
-        console.log('Creating new receiver user');
-        const receiverPhone = formatPhone(data.receiverPhone);
-        
-        // Check if phone already exists
-        const existingUserWithPhone = await this.prisma.user.findFirst({
-          where: { phone: receiverPhone }
-        });
-        
-        if (existingUserWithPhone) {
-          // Use existing user if phone matches
-          receiver = existingUserWithPhone;
-          console.log('Using existing user with same phone:', receiver.id);
-        } else {
-          receiver = await this.prisma.user.create({
-            data: {
-              firstName: data.receiverName.split(' ')[0],
-              lastName: data.receiverName.split(' ').slice(1).join(' ') || 'Unknown',
-              email: data.receiverEmail,
-              phone: receiverPhone,
-              password: await bcrypt.hash('defaultPassword123', 10),
-              role: 'USER'
-            }
-          });
-        }
-      }
+    // Log the parcel creation
+    await this.createLog({
+      action: 'PARCEL_CREATED',
+      details: `New parcel created with ID: ${parcel.id}, Tracking: ${parcel.id}`,
+      userId: data.senderId
+    });
 
-      // Create pickup location
-      console.log('Creating pickup location');
-      const pickupLocation = await this.prisma.location.create({
-        data: {
-          label: 'Pickup Location',
-          address: data.senderAddress,
-          latitude: 0,
-          longitude: 0
-        }
-      });
-
-      // Create delivery location
-      console.log('Creating delivery location');
-      const deliveryLocation = await this.prisma.location.create({
-        data: {
-          label: 'Delivery Location',
-          address: data.receiverAddress,
-          latitude: 0,
-          longitude: 0
-        }
-      });
-
-      // Create the parcel
-      console.log('Creating parcel');
-      const parcel = await this.prisma.parcel.create({
-        data: {
-          senderId: sender.id,
-          receiverId: receiver.id,
-          weight: parseFloat(data.weight),
-          price: parseFloat(data.price),
-          pickupLocationId: pickupLocation.id,
-          deliveryLocationId: deliveryLocation.id,
-          currentStatus: 'PENDING'
-        },
-        include: {
-          sender: true,
-          receiver: true,
-          pickupLocation: true,
-          deliveryLocation: true,
-        },
-      });
-
-      console.log('Parcel created successfully:', parcel.id);
-
-      // Create a log entry for the parcel creation
-      await this.createLog({
-        action: 'PARCEL_CREATED',
-        details: `New parcel created with ID: ${parcel.id}, weight: ${data.weight}kg, price: ${data.price}`
-      });
-
-      // Send notification email to receiver (optional - don't fail if email fails)
-      try {
-        if (receiver && parcel.pickupLocation && parcel.deliveryLocation) {
-          const parcelInfo: ParcelInfo = {
-            trackingNumber: parcel.id,
-            pickupLocation: parcel.pickupLocation.address,
-            deliveryLocation: parcel.deliveryLocation.address,
-          };
-          await this.mailerService.sendOrderCreatedEmail(
-            receiver.email,
-            parcelInfo,
-          );
-        }
-      } catch (emailError) {
-        console.warn('Failed to send email notification:', emailError);
-        // Don't fail the whole operation if email fails
-      }
-
-      return parcel;
-    } catch (error) {
-      console.error('Error creating parcel:', error);
-      throw error;
-    }
+    return parcel;
   }
 
   // Update parcel status
   async updateParcelStatus(parcelId: string, status: string) {
-    const parcel = await this.prisma.parcel.update({
+    const parcel = await this.prisma.parcel.findUnique({
       where: { id: parcelId },
-      data: { currentStatus: status as DeliveryStatusEnum },
-      include: {
-        pickupLocation: true,
-        deliveryLocation: true,
-      },
+      include: { sender: true, receiver: true }
     });
-    const receiver = await this.prisma.user.findUnique({
-      where: { id: parcel.receiverId },
-    });
-    if (receiver) {
-      const parcelInfo: ParcelInfo = {
-        trackingNumber: parcel.id,
-        pickupLocation: parcel.pickupLocation ? parcel.pickupLocation.address : parcel.pickupLocationId,
-        deliveryLocation: parcel.deliveryLocation ? parcel.deliveryLocation.address : parcel.deliveryLocationId,
-      };
-      await this.mailerService.sendStatusUpdateEmail(
-        receiver.email,
-        parcelInfo,
-        status,
-      );
-      if (status.toLowerCase() === 'delivered') {
-        await this.mailerService.sendDeliveryNotification(
-          receiver.email,
-          parcelInfo,
-        );
-      }
+
+    if (!parcel) {
+      throw new Error('Parcel not found');
     }
-    return parcel;
+
+    const updatedParcel = await this.prisma.parcel.update({
+      where: { id: parcelId },
+      data: { currentStatus: status as DeliveryStatusEnum }
+    });
+
+    // Log the status change
+    await this.createLog({
+      action: 'STATUS_CHANGE',
+      details: `Parcel ${parcelId} status updated from ${parcel.currentStatus} to ${status}`,
+      userId: parcel.senderId
+    });
+
+    return updatedParcel;
   }
 
   // List all parcels
@@ -241,34 +99,112 @@ export class AdminService {
 
   // Update user
   async updateUser(userId: string, data: any) {
-    // Map 'name' to firstName and lastName if present
-    const updateData: any = { ...data };
-    if (updateData.name) {
-      const [firstName, ...rest] = updateData.name.split(' ');
-      updateData.firstName = firstName;
-      updateData.lastName = rest.join(' ');
-      delete updateData.name;
-    }
-    if (updateData.phone) {
-      updateData.phone = updateData.phone;
-    }
-    
-    // Hash password if it's being updated
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
-    }
-    
-    // Only allow valid fields
-    const allowedFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'role'];
-    Object.keys(updateData).forEach(key => {
-      if (!allowedFields.includes(key)) delete updateData[key];
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data
     });
-    return this.prisma.user.update({ where: { id: userId }, data: updateData });
+
+    // Log the user update
+    await this.createLog({
+      action: 'USER_UPDATED',
+      details: `User ${userId} profile updated: ${JSON.stringify(data)}`,
+      userId: userId
+    });
+
+    return updatedUser;
   }
 
   // Delete user
   async deleteUser(userId: string) {
-    return this.prisma.user.delete({ where: { id: userId } });
+    console.log('Starting user deletion for userId:', userId);
+    
+    // Get user info before deletion for logging
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+    
+    try {
+      // First delete all related records
+      console.log('Deleting parcel tracking records...');
+      await this.prisma.parcelTracking.deleteMany({
+        where: {
+          parcel: {
+            OR: [
+              { senderId: userId },
+              { receiverId: userId },
+              { courierId: userId }
+            ]
+          }
+        }
+      });
+
+      // Delete proof of delivery records
+      console.log('Deleting proof of delivery records...');
+      await this.prisma.proofOfDelivery.deleteMany({
+        where: {
+          parcel: {
+            OR: [
+              { senderId: userId },
+              { receiverId: userId },
+              { courierId: userId }
+            ]
+          }
+        }
+      });
+
+      // Delete courier locations
+      console.log('Deleting courier locations...');
+      await this.prisma.courierLocation.deleteMany({
+        where: { courierId: userId }
+      });
+
+      // Delete notifications
+      console.log('Deleting notifications...');
+      await this.prisma.notification.deleteMany({
+        where: { userId }
+      });
+
+      // Delete feedback
+      console.log('Deleting feedback...');
+      await this.prisma.feedback.deleteMany({
+        where: { userId }
+      });
+
+      // Delete logs
+      console.log('Deleting logs...');
+      await this.prisma.log.deleteMany({
+        where: { userId }
+      });
+
+      // Delete parcels (as sender, receiver, or courier)
+      console.log('Deleting parcels...');
+      await this.prisma.parcel.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId },
+            { receiverId: userId },
+            { courierId: userId }
+          ]
+        }
+      });
+
+      // Now delete the user
+      console.log('Deleting user...');
+      const result = await this.prisma.user.delete({ where: { id: userId } });
+      console.log('User deletion completed successfully:', result);
+      
+      // Log the user deletion
+      await this.createLog({
+        action: 'USER_DELETED',
+        details: `User ${user?.firstName} ${user?.lastName} (${user?.email}) deleted from system`,
+        userId: undefined // No user ID since user is deleted
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error during user deletion:', error);
+      throw error;
+    }
   }
 
   // Get parcel by ID
@@ -291,7 +227,8 @@ export class AdminService {
     // Create a log entry for the parcel update
     await this.createLog({
       action: 'PARCEL_UPDATED',
-      details: `Parcel ${parcelId} updated with data: ${JSON.stringify(data)}`
+      details: `Parcel ${parcelId} updated with data: ${JSON.stringify(data)}`,
+      userId: updatedParcel.senderId
     });
 
     return updatedParcel;
@@ -299,7 +236,37 @@ export class AdminService {
 
   // Delete parcel
   async deleteParcel(parcelId: string) {
-    return this.prisma.parcel.delete({ where: { id: parcelId } });
+    // Get parcel info before deletion for logging
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: parcelId },
+      include: { sender: true, receiver: true }
+    });
+
+    if (!parcel) {
+      throw new Error('Parcel not found');
+    }
+
+    // First delete related records
+    await this.prisma.parcelTracking.deleteMany({
+      where: { parcelId }
+    });
+
+    // Delete proof of delivery if exists
+    await this.prisma.proofOfDelivery.deleteMany({
+      where: { parcelId }
+    });
+
+    // Now delete the parcel
+    const result = await this.prisma.parcel.delete({ where: { id: parcelId } });
+
+    // Log the parcel deletion
+    await this.createLog({
+      action: 'PARCEL_DELETED',
+      details: `Parcel ${parcelId} deleted. Sender: ${parcel.sender.firstName} ${parcel.sender.lastName}, Receiver: ${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+      userId: parcel.senderId
+    });
+
+    return result;
   }
 
   // Create a notification
@@ -319,7 +286,7 @@ export class AdminService {
     });
     if (existing) throw new ConflictException('Email already in use');
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    return this.prisma.user.create({
+    const admin = await this.prisma.user.create({
       data: {
         firstName: dto.firstName,
         lastName: dto.lastName,
@@ -329,6 +296,15 @@ export class AdminService {
         role: 'ADMIN',
       },
     });
+
+    // Log the admin registration
+    await this.createLog({
+      action: 'ADMIN_CREATED',
+      details: `New admin account created: ${dto.firstName} ${dto.lastName} (${dto.email})`,
+      userId: admin.id
+    });
+
+    return admin;
   }
 
   // Parcels

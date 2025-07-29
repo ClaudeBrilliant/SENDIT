@@ -287,6 +287,7 @@
   .main-content {
     margin-left: 280px; /* Adjust based on sidebar width */
     padding: 2rem;
+    padding-top: 4rem;
     min-height: calc(100vh - 72px); /* Adjust based on navbar height */
     background: #f8fafc;
     z-index: 10;

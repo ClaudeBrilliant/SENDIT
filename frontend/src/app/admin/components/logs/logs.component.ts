@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminService } from '../../services/admin.service';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { NotificationComponent } from '../../../shared/components/notification/notification.component';
 
 export interface Log {
   id: string;
@@ -15,7 +17,7 @@ export interface Log {
 @Component({
   selector: 'app-logs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotificationComponent],
   templateUrl: './logs.component.html',
   styleUrls: ['./logs.component.css']
 })
@@ -24,7 +26,10 @@ export class LogsComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
     this.loadLogs();
@@ -81,12 +86,18 @@ export class LogsComponent implements OnInit {
     this.adminService.createSampleLogs().subscribe({
       next: (response: any) => {
         console.log('Sample logs created:', response);
-        alert('Sample logs created successfully!');
+        this.notificationService.success(
+          'Sample Logs Created',
+          'Sample logs have been created successfully!'
+        );
         this.loadLogs(); // Reload logs to show the new ones
       },
       error: (error) => {
         console.error('Error creating sample logs:', error);
-        alert('Failed to create sample logs. Please try again.');
+        this.notificationService.error(
+          'Failed to Create Logs',
+          'Failed to create sample logs. Please try again.'
+        );
       }
     });
   }

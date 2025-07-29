@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProfileComponent } from '../../../user/components/profile/profile.component';
+import { NotificationService } from '../../../shared/services/notification.service';
 
 @Component({
   selector: 'app-courier-dashboard',
@@ -74,7 +75,10 @@ export class CourierDashboardComponent implements OnInit {
     }
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
     // Get courier info from localStorage or user service
@@ -175,7 +179,10 @@ export class CourierDashboardComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating parcel:', error);
-          alert('Failed to update parcel. Please try again.');
+          this.notificationService.error(
+            'Update Failed',
+            'Failed to update parcel. Please try again.'
+          );
         }
       });
   }
@@ -198,11 +205,17 @@ export class CourierDashboardComponent implements OnInit {
         },
         (error) => {
           console.error('Error getting location:', error);
-          alert('Unable to get current location. Please enter manually.');
+          this.notificationService.warning(
+            'Location Error',
+            'Unable to get current location. Please enter manually.'
+          );
         }
       );
     } else {
-      alert('Geolocation is not supported by this browser.');
+      this.notificationService.warning(
+        'Geolocation Not Supported',
+        'Geolocation is not supported by this browser.'
+      );
     }
   }
 

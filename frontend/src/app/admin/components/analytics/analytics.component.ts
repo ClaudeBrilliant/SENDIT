@@ -313,7 +313,7 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
           },
           x: {
             grid: {
-              display: false
+              color: 'rgba(0, 0, 0, 0.1)'
             }
           }
         }
@@ -330,7 +330,6 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Clean up chart instances to prevent memory leaks
     if (this.statusChartInstance) {
       this.statusChartInstance.destroy();
     }

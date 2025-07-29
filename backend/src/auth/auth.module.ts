@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
+import { AdminModule } from '../admin/admin.module';
 import { JwtService } from '../shared/utils/jwt.service';
 import { JwtAuthGuard } from './guards/jwt/jwt.guard';
 import { RolesGuard } from './guards/roles/roles.guard';
@@ -18,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     ConfigModule,
     forwardRef(() => UsersModule),
+    AdminModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key',
       signOptions: { expiresIn: '24h' },

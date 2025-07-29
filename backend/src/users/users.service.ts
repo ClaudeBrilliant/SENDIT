@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { DeliveryStatusEnum } from '@prisma/client';
 import { CloudinaryService, SenditUploadType } from '../shared/utils/cloudinary/cloudinary.service';
+import { AdminService } from '../admin/admin.service';
 
 export type User = NonNullable<
   Awaited<ReturnType<PrismaClient['user']['findUnique']>>
@@ -14,7 +15,10 @@ export type User = NonNullable<
 export class UsersService {
   private prisma = new PrismaClient();
 
-  constructor(private cloudinaryService: CloudinaryService) {}
+  constructor(
+    private cloudinaryService: CloudinaryService,
+    private adminService: AdminService
+  ) {}
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { email } });
@@ -66,7 +70,7 @@ export class UsersService {
       }
     }
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
         firstName: data.firstName,
@@ -75,6 +79,15 @@ export class UsersService {
         phone: data.phone,
       },
     });
+
+    // Log the profile update
+    await this.adminService.createLog({
+      action: 'PROFILE_UPDATED',
+      details: `User ${user.firstName} ${user.lastName} updated their profile`,
+      userId: userId
+    });
+
+    return updatedUser;
   }
 
   async uploadProfileImage(userId: string, file: Express.Multer.File): Promise<{ imageUrl: string }> {
@@ -102,13 +115,18 @@ export class UsersService {
 
     console.log('Cloudinary upload successful:', uploadResult);
 
-    // Update user profile with new image URL
-    const updatedUser = await this.prisma.user.update({
+    // Update user with new profile image URL
+    await this.prisma.user.update({
       where: { id: userId },
-      data: { profileImage: uploadResult.secure_url },
+      data: { profileImage: uploadResult.secure_url }
     });
 
-    console.log('User profile updated with new image URL');
+    // Log the profile image upload
+    await this.adminService.createLog({
+      action: 'PROFILE_IMAGE_UPLOADED',
+      details: `User ${user.firstName} ${user.lastName} uploaded a new profile image`,
+      userId: userId
+    });
 
     return { imageUrl: uploadResult.secure_url };
   }
@@ -120,11 +138,17 @@ export class UsersService {
     }
 
     if (user.profileImage) {
-      // Extract public_id from URL if needed for Cloudinary deletion
-      // For now, just remove the image URL from database
+      // Remove profile image from user
       await this.prisma.user.update({
         where: { id: userId },
-        data: { profileImage: null },
+        data: { profileImage: null }
+      });
+
+      // Log the profile image deletion
+      await this.adminService.createLog({
+        action: 'PROFILE_IMAGE_DELETED',
+        details: `User ${user.firstName} ${user.lastName} deleted their profile image`,
+        userId: userId
       });
     }
   }

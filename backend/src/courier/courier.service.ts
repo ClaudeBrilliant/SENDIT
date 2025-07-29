@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { DeliveryStatusEnum } from '@prisma/client';
+import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class CourierService {
   private prisma = new PrismaClient();
+
+  constructor(private adminService: AdminService) {}
 
   // Get parcels assigned to this courier
   async getAssignedParcels(courierId: string) {
@@ -38,6 +41,16 @@ export class CourierService {
 
   // Courier updates parcel location/status
   async updateParcelLocation(parcelId: string, location: string, currentStatus: string) {
+    // Get parcel info for logging
+    const parcel = await this.prisma.parcel.findUnique({
+      where: { id: parcelId },
+      include: { courier: true }
+    });
+
+    if (!parcel) {
+      throw new Error('Parcel not found');
+    }
+
     // Update parcel's current status
     const updatedParcel = await this.prisma.parcel.update({
       where: { id: parcelId },
@@ -53,6 +66,13 @@ export class CourierService {
       }
     });
 
+    // Log the location update
+    await this.adminService.createLog({
+      action: 'LOCATION_UPDATED',
+      details: `Courier ${parcel.courier?.firstName} ${parcel.courier?.lastName} updated parcel ${parcelId} location to: ${location}, status: ${currentStatus}`,
+      userId: parcel.courierId || undefined
+    });
+
     return updatedParcel;
   }
 
@@ -66,6 +86,11 @@ export class CourierService {
 
   // Update courier's current location
   async updateCourierLocation(courierId: string, latitude: number, longitude: number, address: string) {
+    // Get courier info for logging
+    const courier = await this.prisma.user.findUnique({
+      where: { id: courierId }
+    });
+
     // Store courier location in the database
     const location = await this.prisma.courierLocation.create({
       data: {
@@ -74,6 +99,13 @@ export class CourierService {
         longitude,
         address
       }
+    });
+
+    // Log the location update
+    await this.adminService.createLog({
+      action: 'COURIER_LOCATION_UPDATED',
+      details: `Courier ${courier?.firstName} ${courier?.lastName} updated location to: ${address} (${latitude}, ${longitude})`,
+      userId: courierId
     });
 
     return {

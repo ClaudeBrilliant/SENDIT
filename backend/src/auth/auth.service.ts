@@ -12,6 +12,7 @@ import { RegisterDto } from './dtos/register.dto';
 import { AuthResponse, JwtPayload } from './interfaces/auth.interface';
 import * as bcrypt from 'bcryptjs';
 import { MailerService } from 'src/shared/utils/mailer/mailer.service';
+import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private mailerService: MailerService,
+    private adminService: AdminService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
@@ -66,6 +68,13 @@ export class AuthService {
 
       const access_token = this.jwtService.generateToken(payload);
 
+      // Log the registration activity
+      await this.adminService.createLog({
+        action: 'USER_CREATED',
+        details: `New user account created: ${user.firstName} ${user.lastName} (${user.email})`,
+        userId: user.id
+      });
+
       return {
         access_token,
         user: {
@@ -106,6 +115,13 @@ export class AuthService {
       };
 
       const access_token = this.jwtService.generateToken(payload);
+
+      // Log the login activity
+      await this.adminService.createLog({
+        action: 'LOGIN',
+        details: `User ${user.firstName} ${user.lastName} (${user.email}) logged in successfully`,
+        userId: user.id
+      });
 
       return {
         access_token,

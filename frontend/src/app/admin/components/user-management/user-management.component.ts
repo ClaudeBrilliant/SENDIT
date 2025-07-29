@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { NotificationComponent } from '../../../shared/components/notification/notification.component';
 
 export interface User {
   id: string;
@@ -19,7 +21,7 @@ export interface User {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NotificationComponent],
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.css']
 })
@@ -41,7 +43,8 @@ export class UserManagementComponent implements OnInit {
     constructor(
     private fb: FormBuilder,
     private router: Router,
-    private adminService: AdminService
+    private adminService: AdminService,
+    private notificationService: NotificationService
   ) {
     this.searchForm = this.fb.group({
       searchTerm: [''],
@@ -69,7 +72,6 @@ export class UserManagementComponent implements OnInit {
     
     this.adminService.getAllUsers().subscribe({
       next: (response: any) => {
-        console.log('API Response:', response); // Debug log
         
         // The backend returns the users directly, not wrapped in a data property
         const usersData = Array.isArray(response) ? response : (response.data || []);
@@ -86,8 +88,6 @@ export class UserManagementComponent implements OnInit {
           joinedAt: new Date(user.createdAt || Date.now()),
           profileImage: '' // No profile image field in the schema
         }));
-        
-        console.log('Transformed users:', this.users); // Debug log
         
         this.filteredUsers = [...this.users];
         this.calculatePagination();
@@ -250,43 +250,59 @@ export class UserManagementComponent implements OnInit {
           }
           
           this.closeEditModal();
-          alert('User updated successfully!');
+          this.notificationService.success(
+            'User Updated',
+            'User updated successfully!'
+          );
         },
         error: (error: any) => {
           console.error('Error updating user:', error);
-          alert('Failed to update user. Please try again.');
+          this.notificationService.error(
+            'Update Failed',
+            'Failed to update user. Please try again.'
+          );
         }
       });
     }
   }
 
   deleteUser(user: User): void {
-    // Show confirmation dialog
-    const confirmed = confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`);
-    
-    if (confirmed) {
-      // Optimistically remove from UI
-      this.users = this.users.filter(u => u.id !== user.id);
-      this.filteredUsers = this.filteredUsers.filter(u => u.id !== user.id);
-      this.calculatePagination();
-      
-      // Make API call to delete user
-      this.adminService.deleteUser(user.id).subscribe({
-        next: (response: any) => {
-          console.log(`Successfully deleted user ${user.id}`);
-          // You could show a success toast notification here
-        },
-        error: (error: any) => {
-          console.error('Error deleting user:', error);
-          // Revert the optimistic update on error
-          this.users.push(user);
-          this.filteredUsers.push(user);
-          this.calculatePagination();
-          // You could show an error toast notification here
-          alert('Failed to delete user. Please try again.');
-        }
-      });
-    }
+    this.notificationService.confirm(
+      'Delete User',
+      `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`,
+      'Delete',
+      'Cancel',
+      () => {
+        // Optimistically remove from UI
+        this.users = this.users.filter(u => u.id !== user.id);
+        this.filteredUsers = this.filteredUsers.filter(u => u.id !== user.id);
+        this.calculatePagination();
+        
+        // Make API call to delete user
+        this.adminService.deleteUser(user.id).subscribe({
+          next: (response: any) => {
+            this.notificationService.success(
+              'User Deleted',
+              'User has been deleted successfully.'
+            );
+          },
+          error: (error: any) => {
+            console.error('Error deleting user:', error);
+            // Revert the optimistic update on error
+            this.users.push(user);
+            this.filteredUsers.push(user);
+            this.calculatePagination();
+            this.notificationService.error(
+              'Delete Failed',
+              'Failed to delete user. Please try again.'
+            );
+          }
+        });
+      },
+      () => {
+        console.log('User deletion cancelled by user');
+      }
+    );
   }
 
   clearFilters(): void {

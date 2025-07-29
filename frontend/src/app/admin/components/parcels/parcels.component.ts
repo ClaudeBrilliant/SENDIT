@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../../shared/services/notification.service';
 
 export interface Parcel {
   id: string;
@@ -33,7 +34,8 @@ export class ParcelsComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationService
   ) {
     this.editForm = this.fb.group({
       sender: [''],
@@ -121,38 +123,56 @@ export class ParcelsComponent implements OnInit {
           }
           
           this.closeEditModal();
-          alert('Parcel updated successfully!');
+          this.notificationService.success(
+            'Parcel Updated',
+            'Parcel updated successfully!'
+          );
         },
         error: (error: any) => {
           console.error('Error updating parcel:', error);
-          alert('Failed to update parcel. Please try again.');
+          this.notificationService.error(
+            'Update Failed',
+            'Failed to update parcel. Please try again.'
+          );
         }
       });
     }
   }
 
   deleteParcel(parcel: Parcel) {
-    const confirmed = confirm(`Are you sure you want to delete parcel "${parcel.trackingNumber}"? This action cannot be undone.`);
-    
-    if (confirmed) {
-      // Optimistically remove from UI
-      this.parcels = this.parcels.filter(p => p.id !== parcel.id);
-      
-      // Make API call to delete parcel
-      this.adminService.deleteParcel(parcel.id).subscribe({
-        next: (response: any) => {
-          console.log(`Successfully deleted parcel ${parcel.id}`);
-          // You could show a success toast notification here
-        },
-        error: (error: any) => {
-          console.error('Error deleting parcel:', error);
-          // Revert the optimistic update on error
-          this.parcels.push(parcel);
-          // You could show an error toast notification here
-          alert('Failed to delete parcel. Please try again.');
-        }
-      });
-    }
+    this.notificationService.confirm(
+      'Delete Parcel',
+      `Are you sure you want to delete parcel "${parcel.trackingNumber}"? This action cannot be undone.`,
+      'Delete',
+      'Cancel',
+      () => {
+        // Optimistically remove from UI
+        this.parcels = this.parcels.filter(p => p.id !== parcel.id);
+        
+        // Make API call to delete parcel
+        this.adminService.deleteParcel(parcel.id).subscribe({
+          next: (response: any) => {
+            console.log(`Successfully deleted parcel ${parcel.id}`);
+            this.notificationService.success(
+              'Parcel Deleted',
+              'Parcel has been deleted successfully.'
+            );
+          },
+          error: (error: any) => {
+            console.error('Error deleting parcel:', error);
+            // Revert the optimistic update on error
+            this.parcels.push(parcel);
+            this.notificationService.error(
+              'Delete Failed',
+              'Failed to delete parcel. Please try again.'
+            );
+          }
+        });
+      },
+      () => {
+        console.log('Parcel deletion cancelled by user');
+      }
+    );
   }
 
   trackParcel(trackingNumber: string) {
@@ -165,6 +185,9 @@ export class ParcelsComponent implements OnInit {
     
     // You can implement navigation logic here if needed
     // For now, we'll just log the tracking number
-    alert(`Redirecting to track parcel: ${trackingNumber}`);
+    this.notificationService.info(
+      'Track Parcel',
+      `Redirecting to track parcel: ${trackingNumber}`
+    );
   }
 } 
