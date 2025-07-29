@@ -92,7 +92,7 @@ model ProofOfDelivery {
   notes      String?
   deliveredAt DateTime
 
-  parcel     Parcel   @relation(fields: [parcelId], references: [id])
+  parcel     Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
 }
 
 model ParcelTracking {
@@ -101,7 +101,7 @@ model ParcelTracking {
   location   String
   timestamp  DateTime @default(now())
 
-  parcel     Parcel   @relation(fields: [parcelId], references: [id])
+  parcel     Parcel   @relation(fields: [parcelId], references: [id], onDelete: Cascade)
 }
 
 model Feedback {
