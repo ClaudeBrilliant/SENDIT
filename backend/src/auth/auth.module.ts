@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -12,9 +12,17 @@ import { ResourceOwnerGuard } from './guards/resource-owner/resource-owner.guard
 import { PermissionService } from './services/permission.service';
 import { PermissionController } from './controllers/permission.controller';
 import { MailerService } from 'src/shared/utils/mailer/mailer.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [ConfigModule, UsersModule],
+  imports: [
+    ConfigModule,
+    forwardRef(() => UsersModule),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
+  ],
   providers: [
     AuthService,
     JwtService,
@@ -36,6 +44,7 @@ import { MailerService } from 'src/shared/utils/mailer/mailer.service';
     PermissionGuard,
     ResourceActionGuard,
     ResourceOwnerGuard,
+    JwtModule,
   ],
 })
 export class AuthModule {}
