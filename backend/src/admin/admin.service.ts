@@ -6,6 +6,7 @@ import {
   ParcelInfo,
 } from '../shared/utils/mailer/mailer.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateParcelDto } from './dto/create-parcel.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -19,27 +20,119 @@ export class AdminService {
   ) {}
 
   // Create parcel
-  async createParcel(data: any) {
-    const parcel = await this.prisma.parcel.create({
-      data: {
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-        weight: data.weight,
-        price: data.price,
-        pickupLocationId: data.pickupLocationId,
-        deliveryLocationId: data.deliveryLocationId,
-        currentStatus: 'PENDING'
+  async createParcel(data: CreateParcelDto) {
+    try {
+      // Create or find sender user
+      let sender = await this.prisma.user.findUnique({
+        where: { email: data.senderEmail }
+      });
+
+      if (!sender) {
+        // Create new sender user
+        const [firstName, ...lastNameParts] = data.senderName.split(' ');
+        const lastName = lastNameParts.join(' ') || 'Unknown';
+        
+        // Generate a unique phone number if there's a conflict
+        let phoneNumber = data.senderPhone;
+        let phoneExists = await this.prisma.user.findUnique({
+          where: { phone: phoneNumber }
+        });
+        
+        if (phoneExists) {
+          // Add a random suffix to make it unique
+          phoneNumber = `${data.senderPhone}_${Math.random().toString(36).substring(2, 6)}`;
+        }
+        
+        sender = await this.prisma.user.create({
+          data: {
+            firstName,
+            lastName,
+            email: data.senderEmail,
+            phone: phoneNumber,
+            password: await bcrypt.hash('temporary123', 10), // Temporary password
+            role: 'USER'
+          }
+        });
       }
-    });
 
-    // Log the parcel creation
-    await this.createLog({
-      action: 'PARCEL_CREATED',
-      details: `New parcel created with ID: ${parcel.id}, Tracking: ${parcel.id}`,
-      userId: data.senderId
-    });
+      // Create or find receiver user
+      let receiver = await this.prisma.user.findUnique({
+        where: { email: data.receiverEmail }
+      });
 
-    return parcel;
+      if (!receiver) {
+        // Create new receiver user
+        const [firstName, ...lastNameParts] = data.receiverName.split(' ');
+        const lastName = lastNameParts.join(' ') || 'Unknown';
+        
+        // Generate a unique phone number if there's a conflict
+        let phoneNumber = data.receiverPhone;
+        let phoneExists = await this.prisma.user.findUnique({
+          where: { phone: phoneNumber }
+        });
+        
+        if (phoneExists) {
+          // Add a random suffix to make it unique
+          phoneNumber = `${data.receiverPhone}_${Math.random().toString(36).substring(2, 6)}`;
+        }
+        
+        receiver = await this.prisma.user.create({
+          data: {
+            firstName,
+            lastName,
+            email: data.receiverEmail,
+            phone: phoneNumber,
+            password: await bcrypt.hash('temporary123', 10), // Temporary password
+            role: 'USER'
+          }
+        });
+      }
+
+      // Create pickup location
+      const pickupLocation = await this.prisma.location.create({
+        data: {
+          label: 'Pickup Location',
+          address: data.senderAddress,
+          latitude: 0, // Default coordinates - you might want to geocode the address
+          longitude: 0
+        }
+      });
+
+      // Create delivery location
+      const deliveryLocation = await this.prisma.location.create({
+        data: {
+          label: 'Delivery Location',
+          address: data.receiverAddress,
+          latitude: 0, // Default coordinates - you might want to geocode the address
+          longitude: 0
+        }
+      });
+
+      // Create the parcel
+      const parcel = await this.prisma.parcel.create({
+        data: {
+          senderId: sender.id,
+          receiverId: receiver.id,
+          weight: data.weight,
+          price: data.price,
+          pickupLocationId: pickupLocation.id,
+          deliveryLocationId: deliveryLocation.id,
+          currentStatus: 'PENDING'
+        }
+      });
+
+      // Log the parcel creation
+      await this.createLog({
+        action: 'PARCEL_CREATED',
+        details: `New parcel created with ID: ${parcel.id}, Tracking: ${parcel.id}. Sender: ${sender.firstName} ${sender.lastName}, Receiver: ${receiver.firstName} ${receiver.lastName}`,
+        userId: sender.id
+      });
+
+      return parcel;
+    } catch (error) {
+      console.error('Error creating parcel:', error);
+      throw error;
+    }
   }
 
   // Update parcel status

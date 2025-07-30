@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateParcelDto } from './dto/create-parcel.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -29,8 +30,8 @@ export class AdminController {
 
   // Parcels
   @Post('parcels')
-  async createParcel(@Body() data: any) {
-    return this.adminService.createParcel(data);
+  async createParcel(@Body() dto: CreateParcelDto) {
+    return this.adminService.createParcel(dto);
   }
 
   @Get('parcels')

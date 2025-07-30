@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { AuthStateService, AuthState } from '../../services/auth-state.service';
 
 @Component({
   selector: 'app-nav',
@@ -9,49 +11,41 @@ import { Router } from '@angular/router';
   templateUrl: './nav.component.html',
   styleUrls: ['./nav.component.css']
 })
-export class NavComponent implements OnInit {
+export class NavComponent implements OnInit, OnDestroy {
   isMobileMenuOpen = false;
   isScrolled = false;
   isLoggedIn = false;
   userRole = '';
+  private authSubscription?: Subscription;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authStateService: AuthStateService
+  ) {}
 
   ngOnInit(): void {
-    this.checkLoginStatus();
-    // Listen for storage changes to update login status
+    // Subscribe to auth state changes
+    this.authSubscription = this.authStateService.authState$.subscribe(
+      (authState: AuthState) => {
+        this.isLoggedIn = authState.isLoggedIn;
+        this.userRole = authState.userRole;
+      }
+    );
+
+    // Listen for storage changes to update login status (for cross-tab synchronization)
     window.addEventListener('storage', () => {
-      this.checkLoginStatus();
+      this.authStateService.checkInitialAuthState();
     });
   }
 
-  checkLoginStatus(): void {
-    const token = localStorage.getItem('access_token');
-    const user = localStorage.getItem('user');
-    
-    if (token && user) {
-      this.isLoggedIn = true;
-      try {
-        const userData = JSON.parse(user);
-        this.userRole = userData.role || '';
-      } catch (e) {
-        this.userRole = '';
-      }
-    } else {
-      this.isLoggedIn = false;
-      this.userRole = '';
+  ngOnDestroy(): void {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 
-  refreshLoginStatus(): void {
-    this.checkLoginStatus();
-  }
-
   logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    this.isLoggedIn = false;
-    this.userRole = '';
+    this.authStateService.logout();
     this.router.navigate(['/']);
   }
 
