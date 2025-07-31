@@ -37,6 +37,13 @@ export class ParcelsController {
     return [...sentParcels, ...receivedParcels];
   }
 
+  @Get('user/:userId')
+  async getUserParcels(@Param('userId') userId: string) {
+    const sentParcels = await this.parcelsService.getSentParcels(userId);
+    const receivedParcels = await this.parcelsService.getReceivedParcels(userId);
+    return [...sentParcels, ...receivedParcels];
+  }
+
   @Get('assigned')
   async getAssignedParcels(@Query('courierId') courierId: string) {
     return this.parcelsService.getAssignedParcels(courierId);

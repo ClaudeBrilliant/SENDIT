@@ -28,15 +28,14 @@ export class NotificationsController {
     return this.notificationsService.getNotificationById(id);
   }
 
-  // Update a notification (e.g., title/message/type)
+  // Update a notification (e.g., content/type)
   @Patch(':id')
   async updateNotification(
     @Param('id') id: string,
-    @Body('title') title?: string,
-    @Body('message') message?: string,
+    @Body('content') content?: string,
     @Body('type') type?: string,
   ) {
-    return this.notificationsService.updateNotification(id, { title, message, type });
+    return this.notificationsService.updateNotification(id, { content, type });
   }
 
   // Mark a notification as read

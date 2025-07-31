@@ -57,8 +57,26 @@ export class ParcelsComponent implements OnInit {
     this.adminService.getAllParcels().subscribe({
       next: (data: any) => {
         console.log('Parcels data received:', data); // Debug log
-        this.parcels = data || [];
-        console.log('Parcels array:', this.parcels); // Debug log
+        
+        // Ensure data is an array and validate each parcel
+        if (Array.isArray(data)) {
+          this.parcels = data.map(parcel => ({
+            id: parcel.id || '',
+            trackingNumber: parcel.trackingNumber || parcel.id || '',
+            sender: parcel.sender || parcel.senderName || 'Unknown',
+            receiver: parcel.receiver || parcel.receiverName || 'Unknown',
+            status: parcel.status || parcel.currentStatus || 'PENDING',
+            createdAt: parcel.createdAt || new Date().toISOString(),
+            weight: parcel.weight || 0,
+            price: parcel.price || 0,
+            pickupLocation: parcel.pickupLocation || '',
+            deliveryLocation: parcel.deliveryLocation || ''
+          }));
+        } else {
+          this.parcels = [];
+        }
+        
+        console.log('Processed parcels array:', this.parcels); // Debug log
         this.loading = false;
       },
       error: (error) => {

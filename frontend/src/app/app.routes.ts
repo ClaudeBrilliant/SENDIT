@@ -3,6 +3,7 @@ import { HomeComponent } from './pages/home/home';
 import { LoginComponent } from './auth/components/login/login.component';
 import { RegisterComponent } from './auth/components/register/register.component';
 import { ForgotPasswordComponent } from './auth/components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './auth/components/reset-password/reset-password.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { FaqsComponent } from './pages/faqs/faqs.component';
 import { ServicesComponent } from './shared/components/services/services.component';
@@ -10,6 +11,7 @@ import { AboutComponent } from './shared/components/about/about.component';
 import { UserDashboardComponent } from './user/components/dashboard/dashboard.component';
 import { ProfileComponent } from './user/components/profile/profile.component';
 import { TrackParcelComponent } from './user/components/track-parcel/track-parcel.component';
+import { ReviewsComponent } from './user/components/reviews/reviews.component';
 import { CourierGuard } from './courier/courier.guard';
 import { CourierDashboardComponent } from './courier/components/dashboard/courier-dashboard.component';
 
@@ -21,6 +23,7 @@ export const routes: Routes = [
   { path: 'auth/login', component: LoginComponent },
   { path: 'auth/register', component: RegisterComponent },
   { path: 'auth/forgot-password', component: ForgotPasswordComponent },
+  { path: 'auth/reset-password', component: ResetPasswordComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'faqs', component: FaqsComponent },
   { path: 'services', component: ServicesComponent },
@@ -28,6 +31,7 @@ export const routes: Routes = [
   { path: 'user/dashboard', component: UserDashboardComponent },
   { path: 'user/profile', component: ProfileComponent },
   { path: 'user/track-parcel', component: TrackParcelComponent },
+  { path: 'user/reviews', component: ReviewsComponent },
   {
     path: 'courier/dashboard',
     component: CourierDashboardComponent,

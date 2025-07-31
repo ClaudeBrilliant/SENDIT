@@ -19,6 +19,38 @@
     </ul>
 
     <div class="nav-actions">
+      <!-- Notification Icon (only show when logged in) -->
+      <div *ngIf="isLoggedIn" class="notification-container">
+        <button class="notification-btn" (click)="toggleNotificationDropdown($event)">
+          <svg class="notification-icon" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
+          <span *ngIf="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+        </button>
+        
+        <!-- Notification Dropdown -->
+        <div *ngIf="showNotificationDropdown" class="notification-dropdown">
+          <div class="notification-header">
+            <h4>Notifications</h4>
+            <button class="close-btn" (click)="toggleNotificationDropdown($event)">×</button>
+          </div>
+          <div class="notification-list">
+            <div *ngIf="notifications.length === 0" class="no-notifications">
+              <p>No unread notifications</p>
+            </div>
+            <div *ngFor="let notification of notifications" 
+                 class="notification-item"
+                 (click)="markAsRead(notification.id)">
+              <div class="notification-content">
+                <p class="notification-text">{{ notification.content }}</p>
+                <span class="notification-time">{{ notification.createdAt | date:'short' }}</span>
+              </div>
+              <div class="unread-indicator"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Show Dashboard button when logged in -->
       <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="navigateToDashboard()">
         Dashboard

@@ -25,6 +25,8 @@ model User {
   feedbacks         Feedback[]
   logs              Log[]
   courierLocations  CourierLocation[]
+  passwordResets    PasswordReset[]
+  reviews           Review[]
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 }
@@ -37,6 +39,7 @@ enum Role {
 
 model Parcel {
   id                  String           @id @default(uuid())
+  trackingNumber      String           @unique @default(uuid())
   senderId            String
   receiverId          String
   courierId           String?
@@ -47,6 +50,7 @@ model Parcel {
   currentStatus       DeliveryStatusEnum @default(PENDING)
   proofOfDelivery     ProofOfDelivery?
   tracking            ParcelTracking[]
+  reviews             Review[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
@@ -143,4 +147,27 @@ model CourierLocation {
   timestamp DateTime @default(now())
 
   courier   User     @relation(fields: [courierId], references: [id])
+}
+
+model PasswordReset {
+  id         String   @id @default(uuid())
+  userId     String
+  resetCode  String
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  parcelId  String
+  rating    Int      // 1 to 5 stars
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+  parcel    Parcel   @relation(fields: [parcelId], references: [id])
 }

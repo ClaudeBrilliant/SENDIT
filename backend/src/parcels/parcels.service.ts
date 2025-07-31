@@ -6,12 +6,14 @@ import {
 } from '../shared/utils/mailer/mailer.service';
 import { CreateParcelDto } from './dtos/CreateParcelDto';
 import { DeliveryStatusEnum } from '@prisma/client';
+import { NotificationTriggerService } from '../notifications/notification-trigger.service';
 
 @Injectable()
 export class ParcelsService {
   constructor(
     private prisma: PrismaService,
     private readonly mailerService: MailerService,
+    private readonly notificationTriggerService: NotificationTriggerService,
   ) {}
 
   async createParcel(dto: CreateParcelDto) {
@@ -61,6 +63,10 @@ export class ParcelsService {
         currentStatus: status as DeliveryStatusEnum,
       },
     });
+
+    // Trigger notifications for parcel creation
+    await this.notificationTriggerService.notifyParcelCreated(parcel.id);
+
     // Fetch receiver email and info
     const receiver = await this.prisma.user.findUnique({
       where: { id: parcel.receiverId },
@@ -89,6 +95,7 @@ export class ParcelsService {
       include: {
         sender: true,
         receiver: true,
+        courier: true,
         pickupLocation: true,
         deliveryLocation: true
       }
@@ -98,23 +105,25 @@ export class ParcelsService {
 
     const formattedParcels = parcels.map(parcel => ({
       id: parcel.id,
-      trackingNumber: parcel.id, // Use ID as tracking number
-      senderName: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
-      senderEmail: parcel.sender?.email,
-      receiverName: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
-      receiverEmail: parcel.receiver?.email,
-      pickupAddress: parcel.pickupLocation?.address || 'Pickup Address',
-      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Address',
+      trackingNumber: parcel.id,
+      senderName: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+      senderEmail: parcel.sender.email,
+      receiverName: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+      receiverEmail: parcel.receiver.email,
+      pickupAddress: parcel.pickupLocation?.address || 'Pickup Location',
+      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Location',
+      status: parcel.currentStatus,
       weight: parcel.weight,
       weightCategory: this.getWeightCategory(parcel.weight),
-      status: parcel.currentStatus,
       price: parcel.price,
       createdAt: parcel.createdAt,
       updatedAt: parcel.updatedAt,
-      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus)
+      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus),
+      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null,
+      courierId: parcel.courierId || null
     }));
 
-    console.log('Formatted sent parcels:', formattedParcels);
+    console.log('Formatted parcels:', formattedParcels);
     return formattedParcels;
   }
 
@@ -127,6 +136,7 @@ export class ParcelsService {
       include: {
         sender: true,
         receiver: true,
+        courier: true,
         pickupLocation: true,
         deliveryLocation: true
       }
@@ -136,20 +146,22 @@ export class ParcelsService {
 
     const formattedParcels = parcels.map(parcel => ({
       id: parcel.id,
-      trackingNumber: parcel.id, // Use ID as tracking number
-      senderName: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
-      senderEmail: parcel.sender?.email,
-      receiverName: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
-      receiverEmail: parcel.receiver?.email,
-      pickupAddress: parcel.pickupLocation?.address || 'Pickup Address',
-      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Address',
+      trackingNumber: parcel.id,
+      senderName: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+      senderEmail: parcel.sender.email,
+      receiverName: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+      receiverEmail: parcel.receiver.email,
+      pickupAddress: parcel.pickupLocation?.address || 'Pickup Location',
+      deliveryAddress: parcel.deliveryLocation?.address || 'Delivery Location',
+      status: parcel.currentStatus,
       weight: parcel.weight,
       weightCategory: this.getWeightCategory(parcel.weight),
-      status: parcel.currentStatus,
       price: parcel.price,
       createdAt: parcel.createdAt,
       updatedAt: parcel.updatedAt,
-      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus)
+      estimatedDelivery: this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus),
+      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null,
+      courierId: parcel.courierId || null
     }));
 
     console.log('Formatted received parcels:', formattedParcels);
@@ -158,11 +170,18 @@ export class ParcelsService {
 
   // Get parcels assigned to a courier
   async getAssignedParcels(courierId: string) {
-    // Use valid field for courier assignment if available in schema
-    return this.prisma.parcel.findMany({ where: { courierId } });
+    return this.prisma.parcel.findMany({ 
+      where: { courierId },
+      include: {
+        sender: true,
+        receiver: true,
+        pickupLocation: true,
+        deliveryLocation: true
+      }
+    });
   }
 
-  // Track parcel by tracking number (parcel ID)
+  // Track parcel by tracking number
   async trackParcel(trackingNumber: string) {
     const parcel = await this.prisma.parcel.findUnique({
       where: { id: trackingNumber },
@@ -183,8 +202,6 @@ export class ParcelsService {
             phone: true
           }
         },
-        pickupLocation: true,
-        deliveryLocation: true,
         courier: {
           select: {
             firstName: true,
@@ -192,20 +209,42 @@ export class ParcelsService {
             email: true,
             phone: true
           }
-        }
+        },
+        pickupLocation: true,
+        deliveryLocation: true,
+        tracking: {
+          orderBy: { timestamp: 'desc' },
+          take: 10
+        },
+        proofOfDelivery: true
       }
     });
 
     if (!parcel) {
-      throw new NotFoundException(`Parcel with tracking number ${trackingNumber} not found`);
+      throw new NotFoundException('Parcel not found');
     }
 
-    // Transform the data for frontend consumption
+    // Calculate estimated delivery date
+    const estimatedDelivery = this.calculateEstimatedDelivery(parcel.createdAt, parcel.currentStatus);
+
     return {
       id: parcel.id,
-      trackingNumber: parcel.id, // Use ID as tracking number
-      sender: `${parcel.sender?.firstName} ${parcel.sender?.lastName}`,
-      receiver: `${parcel.receiver?.firstName} ${parcel.receiver?.lastName}`,
+      trackingNumber: parcel.id,
+      sender: {
+        name: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+        email: parcel.sender.email,
+        phone: parcel.sender.phone
+      },
+      receiver: {
+        name: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+        email: parcel.receiver.email,
+        phone: parcel.receiver.phone
+      },
+      courier: parcel.courier ? {
+        name: `${parcel.courier.firstName} ${parcel.courier.lastName}`,
+        email: parcel.courier.email,
+        phone: parcel.courier.phone
+      } : null,
       pickupLocation: parcel.pickupLocation?.address || 'Pickup Location',
       deliveryLocation: parcel.deliveryLocation?.address || 'Delivery Location',
       currentStatus: parcel.currentStatus,
@@ -213,8 +252,16 @@ export class ParcelsService {
       price: parcel.price,
       createdAt: parcel.createdAt,
       updatedAt: parcel.updatedAt,
-      courier: parcel.courier ? `${parcel.courier.firstName} ${parcel.courier.lastName}` : null,
-      courierId: parcel.courierId || null
+      estimatedDelivery,
+      trackingHistory: parcel.tracking.map(track => ({
+        location: track.location,
+        timestamp: track.timestamp
+      })),
+      proofOfDelivery: parcel.proofOfDelivery ? {
+        signature: parcel.proofOfDelivery.signature,
+        notes: parcel.proofOfDelivery.notes,
+        deliveredAt: parcel.proofOfDelivery.deliveredAt
+      } : null
     };
   }
 
@@ -240,6 +287,10 @@ export class ParcelsService {
       where: { id: parcelId },
       data: { currentStatus: currentStatusId as DeliveryStatusEnum }, // statusName must be a valid DeliveryStatusEnum value
     });
+
+    // Trigger notifications for status change
+    await this.notificationTriggerService.notifyParcelStatusChange(parcelId, currentStatusId, parcel.senderId);
+
     // Fetch receiver email and info
     const receiver = await this.prisma.user.findUnique({
       where: { id: parcel.receiverId },

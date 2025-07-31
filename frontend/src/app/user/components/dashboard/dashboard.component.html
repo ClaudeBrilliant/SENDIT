@@ -21,6 +21,10 @@
             <i class="icon-list"></i>
             My Parcels
           </button>
+          <button class="btn btn-secondary" (click)="goToReviews()">
+            <i class="icon-message-circle"></i>
+            Reviews
+          </button>
           <div class="user-menu">
             <button class="btn btn-ghost" (click)="openProfileModal()">
               <i class="icon-user"></i>
@@ -211,6 +215,12 @@
                 <button class="btn-icon" (click)="trackParcel(parcel.trackingNumber); $event.stopPropagation()">
                   <i class="icon-eye"></i>
                 </button>
+                <button class="btn-icon comment" 
+                        (click)="openCommentModal(parcel); $event.stopPropagation()"
+                        *ngIf="parcel.status === 'DELIVERED' && !hasUserReviewed(parcel.id)"
+                        title="Leave a Review">
+                  <i class="icon-message-circle"></i>
+                </button>
                 <button class="btn-icon" (click)="editParcel(parcel.id); $event.stopPropagation()" 
                         *ngIf="parcel.status === 'PENDING'">
                   <i class="icon-edit-2"></i>
@@ -281,6 +291,12 @@
               <div class="parcel-actions">
                 <button class="btn-icon" (click)="trackParcel(parcel.trackingNumber); $event.stopPropagation()">
                   <i class="icon-eye"></i>
+                </button>
+                <button class="btn-icon comment" 
+                        (click)="openCommentModal(parcel); $event.stopPropagation()"
+                        *ngIf="parcel.status === 'DELIVERED' && !hasUserReviewed(parcel.id)"
+                        title="Leave a Review">
+                  <i class="icon-message-circle"></i>
                 </button>
               </div>
             </div>
@@ -412,6 +428,25 @@
           <i class="icon-x"></i>
         </button>
         <app-profile></app-profile>
+      </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div class="modal-overlay" *ngIf="showCommentModal" (click)="closeCommentModal()">
+      <div class="modal-content comment-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Leave a Review</h2>
+          <button class="modal-close" (click)="closeCommentModal()">
+            <i class="icon-x"></i>
+          </button>
+        </div>
+        <div class="modal-body" *ngIf="selectedParcelForComment">
+          <div class="parcel-info">
+            <h3>Parcel #{{selectedParcelForComment.trackingNumber}}</h3>
+            <p>{{selectedParcelForComment.pickupAddress}} → {{selectedParcelForComment.deliveryAddress}}</p>
+          </div>
+          <app-reviews [parcelId]="selectedParcelForComment.id"></app-reviews>
+        </div>
       </div>
     </div>
 </div>

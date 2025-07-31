@@ -9,6 +9,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateParcelDto } from './dto/create-parcel.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationTriggerService } from '../notifications/notification-trigger.service';
 
 @Injectable()
 export class AdminService {
@@ -17,6 +18,7 @@ export class AdminService {
   constructor(
     private readonly mailerService: MailerService,
     private prismaService: PrismaService,
+    private readonly notificationTriggerService: NotificationTriggerService,
   ) {}
 
   // Create parcel
@@ -49,7 +51,7 @@ export class AdminService {
             lastName,
             email: data.senderEmail,
             phone: phoneNumber,
-            password: await bcrypt.hash('temporary123', 10), // Temporary password
+            password: 'defaultPassword123!', // You might want to generate a random password
             role: 'USER'
           }
         });
@@ -82,31 +84,43 @@ export class AdminService {
             lastName,
             email: data.receiverEmail,
             phone: phoneNumber,
-            password: await bcrypt.hash('temporary123', 10), // Temporary password
+            password: 'defaultPassword123!', // You might want to generate a random password
             role: 'USER'
           }
         });
       }
 
-      // Create pickup location
-      const pickupLocation = await this.prisma.location.create({
-        data: {
-          label: 'Pickup Location',
-          address: data.senderAddress,
-          latitude: 0, // Default coordinates - you might want to geocode the address
-          longitude: 0
-        }
+      // Create or find pickup location
+      let pickupLocation = await this.prisma.location.findFirst({
+        where: { address: data.senderAddress }
       });
 
-      // Create delivery location
-      const deliveryLocation = await this.prisma.location.create({
-        data: {
-          label: 'Delivery Location',
-          address: data.receiverAddress,
-          latitude: 0, // Default coordinates - you might want to geocode the address
-          longitude: 0
-        }
+      if (!pickupLocation) {
+        pickupLocation = await this.prisma.location.create({
+          data: {
+            address: data.senderAddress,
+            label: data.senderAddress,
+            latitude: 0, // You might want to geocode the address
+            longitude: 0
+          }
+        });
+      }
+
+      // Create or find delivery location
+      let deliveryLocation = await this.prisma.location.findFirst({
+        where: { address: data.receiverAddress }
       });
+
+      if (!deliveryLocation) {
+        deliveryLocation = await this.prisma.location.create({
+          data: {
+            address: data.receiverAddress,
+            label: data.receiverAddress,
+            latitude: 0, // You might want to geocode the address
+            longitude: 0
+          }
+        });
+      }
 
       // Create the parcel
       const parcel = await this.prisma.parcel.create({
@@ -121,44 +135,65 @@ export class AdminService {
         }
       });
 
-      // Log the parcel creation
+      // Send email notification to receiver
+      const parcelInfo: ParcelInfo = {
+        trackingNumber: parcel.id,
+        pickupLocation: data.senderAddress,
+        deliveryLocation: data.receiverAddress,
+      };
+
+      await this.mailerService.sendOrderCreatedEmail(
+        receiver.email,
+        parcelInfo,
+      );
+
+      // Create a log entry
       await this.createLog({
         action: 'PARCEL_CREATED',
-        details: `New parcel created with ID: ${parcel.id}, Tracking: ${parcel.id}. Sender: ${sender.firstName} ${sender.lastName}, Receiver: ${receiver.firstName} ${receiver.lastName}`,
+        details: `Parcel created by admin: ${parcel.id}`,
         userId: sender.id
       });
 
       return parcel;
     } catch (error) {
       console.error('Error creating parcel:', error);
-      throw error;
+      throw new ConflictException('Failed to create parcel');
     }
   }
 
   // Update parcel status
   async updateParcelStatus(parcelId: string, status: string) {
-    const parcel = await this.prisma.parcel.findUnique({
-      where: { id: parcelId },
-      include: { sender: true, receiver: true }
-    });
-
-    if (!parcel) {
-      throw new Error('Parcel not found');
-    }
-
-    const updatedParcel = await this.prisma.parcel.update({
+    const parcel = await this.prisma.parcel.update({
       where: { id: parcelId },
       data: { currentStatus: status as DeliveryStatusEnum }
     });
 
-    // Log the status change
-    await this.createLog({
-      action: 'STATUS_CHANGE',
-      details: `Parcel ${parcelId} status updated from ${parcel.currentStatus} to ${status}`,
-      userId: parcel.senderId
+    // Send status update email
+    const receiver = await this.prisma.user.findUnique({
+      where: { id: parcel.receiverId }
     });
 
-    return updatedParcel;
+    if (receiver) {
+      const parcelInfo: ParcelInfo = {
+        trackingNumber: parcel.id,
+        pickupLocation: 'Pickup Location',
+        deliveryLocation: 'Delivery Location',
+      };
+
+      await this.mailerService.sendStatusUpdateEmail(
+        receiver.email,
+        parcelInfo,
+        status
+      );
+    }
+
+    // Create a log entry
+    await this.createLog({
+      action: 'STATUS_UPDATED',
+      details: `Parcel ${parcelId} status updated to ${status}`,
+    });
+
+    return parcel;
   }
 
   // List all parcels
@@ -167,22 +202,21 @@ export class AdminService {
       include: {
         sender: true,
         receiver: true,
+        courier: true,
         pickupLocation: true,
-        deliveryLocation: true,
-      },
+        deliveryLocation: true
+      }
     });
   }
 
   // List all users
   async listUsers() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({ where: { role: 'USER' } });
   }
 
   // List all couriers
   async listCouriers() {
-    return this.prisma.user.findMany({
-      where: { role: 'COURIER' },
-    });
+    return this.prisma.user.findMany({ where: { role: 'COURIER' } });
   }
 
   // Get user by ID
@@ -192,112 +226,32 @@ export class AdminService {
 
   // Update user
   async updateUser(userId: string, data: any) {
-    const updatedUser = await this.prisma.user.update({
+    return this.prisma.user.update({
       where: { id: userId },
       data
     });
-
-    // Log the user update
-    await this.createLog({
-      action: 'USER_UPDATED',
-      details: `User ${userId} profile updated: ${JSON.stringify(data)}`,
-      userId: userId
-    });
-
-    return updatedUser;
   }
 
   // Delete user
   async deleteUser(userId: string) {
-    console.log('Starting user deletion for userId:', userId);
-    
-    // Get user info before deletion for logging
-    const user = await this.prisma.user.findUnique({
+    // Check if user has any parcels
+    const userParcels = await this.prisma.parcel.findMany({
+      where: {
+        OR: [
+          { senderId: userId },
+          { receiverId: userId },
+          { courierId: userId }
+        ]
+      }
+    });
+
+    if (userParcels.length > 0) {
+      throw new ConflictException('Cannot delete user with existing parcels');
+    }
+
+    return this.prisma.user.delete({
       where: { id: userId }
     });
-    
-    try {
-      // First delete all related records
-      console.log('Deleting parcel tracking records...');
-      await this.prisma.parcelTracking.deleteMany({
-        where: {
-          parcel: {
-            OR: [
-              { senderId: userId },
-              { receiverId: userId },
-              { courierId: userId }
-            ]
-          }
-        }
-      });
-
-      // Delete proof of delivery records
-      console.log('Deleting proof of delivery records...');
-      await this.prisma.proofOfDelivery.deleteMany({
-        where: {
-          parcel: {
-            OR: [
-              { senderId: userId },
-              { receiverId: userId },
-              { courierId: userId }
-            ]
-          }
-        }
-      });
-
-      // Delete courier locations
-      console.log('Deleting courier locations...');
-      await this.prisma.courierLocation.deleteMany({
-        where: { courierId: userId }
-      });
-
-      // Delete notifications
-      console.log('Deleting notifications...');
-      await this.prisma.notification.deleteMany({
-        where: { userId }
-      });
-
-      // Delete feedback
-      console.log('Deleting feedback...');
-      await this.prisma.feedback.deleteMany({
-        where: { userId }
-      });
-
-      // Delete logs
-      console.log('Deleting logs...');
-      await this.prisma.log.deleteMany({
-        where: { userId }
-      });
-
-      // Delete parcels (as sender, receiver, or courier)
-      console.log('Deleting parcels...');
-      await this.prisma.parcel.deleteMany({
-        where: {
-          OR: [
-            { senderId: userId },
-            { receiverId: userId },
-            { courierId: userId }
-          ]
-        }
-      });
-
-      // Now delete the user
-      console.log('Deleting user...');
-      const result = await this.prisma.user.delete({ where: { id: userId } });
-      console.log('User deletion completed successfully:', result);
-      
-      // Log the user deletion
-      await this.createLog({
-        action: 'USER_DELETED',
-        details: `User ${user?.firstName} ${user?.lastName} (${user?.email}) deleted from system`,
-        userId: undefined // No user ID since user is deleted
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Error during user deletion:', error);
-      throw error;
-    }
   }
 
   // Get parcel by ID
@@ -307,125 +261,156 @@ export class AdminService {
       include: {
         sender: true,
         receiver: true,
+        courier: true,
         pickupLocation: true,
         deliveryLocation: true,
-      },
+        tracking: {
+          orderBy: { timestamp: 'desc' }
+        },
+        proofOfDelivery: true
+      }
     });
   }
 
   // Update parcel
   async updateParcel(parcelId: string, data: any) {
-    const updatedParcel = await this.prisma.parcel.update({ where: { id: parcelId }, data });
-
-    // Create a log entry for the parcel update
-    await this.createLog({
-      action: 'PARCEL_UPDATED',
-      details: `Parcel ${parcelId} updated with data: ${JSON.stringify(data)}`,
-      userId: updatedParcel.senderId
+    return this.prisma.parcel.update({
+      where: { id: parcelId },
+      data
     });
-
-    return updatedParcel;
   }
 
   // Delete parcel
   async deleteParcel(parcelId: string) {
-    // Get parcel info before deletion for logging
-    const parcel = await this.prisma.parcel.findUnique({
-      where: { id: parcelId },
-      include: { sender: true, receiver: true }
-    });
-
-    if (!parcel) {
-      throw new Error('Parcel not found');
-    }
-
-    // First delete related records
+    // Delete related records first
     await this.prisma.parcelTracking.deleteMany({
       where: { parcelId }
     });
 
-    // Delete proof of delivery if exists
     await this.prisma.proofOfDelivery.deleteMany({
       where: { parcelId }
     });
 
-    // Now delete the parcel
-    const result = await this.prisma.parcel.delete({ where: { id: parcelId } });
-
-    // Log the parcel deletion
-    await this.createLog({
-      action: 'PARCEL_DELETED',
-      details: `Parcel ${parcelId} deleted. Sender: ${parcel.sender.firstName} ${parcel.sender.lastName}, Receiver: ${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
-      userId: parcel.senderId
+    return this.prisma.parcel.delete({
+      where: { id: parcelId }
     });
-
-    return result;
   }
 
-  // Create a notification
+  // Create notification
   async createNotification(userId: string, message: string) {
     return this.prisma.notification.create({
       data: {
         userId,
-        type: NotificationType.EMAIL, // or SMS or PUSH
         content: message,
-      },
+        type: NotificationType.EMAIL
+      }
     });
   }
 
+  // Register admin
   async registerAdmin(dto: CreateAdminDto) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-    if (existing) throw new ConflictException('Email already in use');
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+
     const admin = await this.prisma.user.create({
       data: {
         firstName: dto.firstName,
         lastName: dto.lastName,
         email: dto.email,
-        password: hashedPassword,
         phone: dto.phone,
-        role: 'ADMIN',
-      },
+        password: hashedPassword,
+        role: 'ADMIN'
+      }
     });
 
-    // Log the admin registration
-    await this.createLog({
-      action: 'ADMIN_CREATED',
-      details: `New admin account created: ${dto.firstName} ${dto.lastName} (${dto.email})`,
-      userId: admin.id
-    });
-
-    return admin;
+    return {
+      id: admin.id,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
+      email: admin.email,
+      phone: admin.phone,
+      role: admin.role
+    };
   }
 
-  // Parcels
+  // Get all parcels with detailed information
   async getAllParcels() {
     const parcels = await this.prisma.parcel.findMany({
       include: {
-        sender: true,
-        receiver: true,
+        sender: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
+        courier: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true
+          }
+        },
         pickupLocation: true,
         deliveryLocation: true,
+        tracking: {
+          orderBy: { timestamp: 'desc' },
+          take: 5
+        },
+        proofOfDelivery: true
       },
+      orderBy: { createdAt: 'desc' }
     });
-    
+
     return parcels.map(parcel => ({
       id: parcel.id,
-      trackingNumber: parcel.id, // Using ID as tracking number for now
-      sender: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
-      receiver: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
-      status: parcel.currentStatus,
-      createdAt: parcel.createdAt,
+      trackingNumber: parcel.id,
+      sender: {
+        id: parcel.sender.id,
+        name: `${parcel.sender.firstName} ${parcel.sender.lastName}`,
+        email: parcel.sender.email,
+        phone: parcel.sender.phone
+      },
+      receiver: {
+        id: parcel.receiver.id,
+        name: `${parcel.receiver.firstName} ${parcel.receiver.lastName}`,
+        email: parcel.receiver.email,
+        phone: parcel.receiver.phone
+      },
+      courier: parcel.courier ? {
+        id: parcel.courier.id,
+        name: `${parcel.courier.firstName} ${parcel.courier.lastName}`,
+        email: parcel.courier.email,
+        phone: parcel.courier.phone
+      } : null,
+      pickupLocation: parcel.pickupLocation?.address || 'Pickup Location',
+      deliveryLocation: parcel.deliveryLocation?.address || 'Delivery Location',
+      currentStatus: parcel.currentStatus,
       weight: parcel.weight,
       price: parcel.price,
-      pickupLocation: parcel.pickupLocation.address,
-      deliveryLocation: parcel.deliveryLocation.address,
-      senderEmail: parcel.sender.email,
-      receiverEmail: parcel.receiver.email,
-      senderPhone: parcel.sender.phone,
-      receiverPhone: parcel.receiver.phone
+      createdAt: parcel.createdAt,
+      updatedAt: parcel.updatedAt,
+      trackingHistory: parcel.tracking.map(track => ({
+        location: track.location,
+        timestamp: track.timestamp
+      })),
+      proofOfDelivery: parcel.proofOfDelivery ? {
+        signature: parcel.proofOfDelivery.signature,
+        notes: parcel.proofOfDelivery.notes,
+        deliveredAt: parcel.proofOfDelivery.deliveredAt
+      } : null
     }));
   }
 
@@ -455,6 +440,9 @@ export class AdminService {
         currentStatus: 'IN_TRANSIT' // Automatically change status to IN_TRANSIT when courier is assigned
       },
     });
+
+    // Trigger notifications for courier assignment
+    await this.notificationTriggerService.notifyCourierAssignment(parcelId, courierId);
 
     // Create a log entry for the courier assignment
     await this.createLog({

@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { DeliveryStatusEnum } from '@prisma/client';
 import { AdminService } from '../admin/admin.service';
+import { NotificationTriggerService } from '../notifications/notification-trigger.service';
 
 @Injectable()
 export class CourierService {
   private prisma = new PrismaClient();
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private readonly notificationTriggerService: NotificationTriggerService,
+  ) {}
 
   // Get parcels assigned to this courier
   async getAssignedParcels(courierId: string) {
@@ -65,6 +69,9 @@ export class CourierService {
         timestamp: new Date()
       }
     });
+
+    // Trigger notifications for courier status update
+    await this.notificationTriggerService.notifyCourierStatusUpdate(parcelId, parcel.courierId!, currentStatus);
 
     // Log the location update
     await this.adminService.createLog({

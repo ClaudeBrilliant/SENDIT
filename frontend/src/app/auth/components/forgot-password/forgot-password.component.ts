@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-forgot-password',
@@ -15,10 +16,12 @@ export class ForgotPasswordComponent {
   isLoading = false;
   emailSent = false;
   errorMessage = '';
+  submittedEmail = '';
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
@@ -30,22 +33,30 @@ export class ForgotPasswordComponent {
       this.isLoading = true;
       this.errorMessage = '';
       
-      // Simulate API call
-      setTimeout(() => {
-        const { email } = this.forgotPasswordForm.value;
-        console.log('Password reset request for:', email);
-        
-        // Mock password reset - replace with actual auth service
-        if (email === 'test@example.com') {
-          this.emailSent = true;
-        } else {
-          this.errorMessage = 'If an account with this email exists, you will receive a password reset link.';
-        }
-        this.isLoading = false;
-      }, 1500);
+      const { email } = this.forgotPasswordForm.value;
+      this.submittedEmail = email;
+      
+      this.http.post('http://localhost:3000/auth/forgot-password', { email })
+        .subscribe({
+          next: (response: any) => {
+            this.emailSent = true;
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error('Error requesting password reset:', error);
+            this.errorMessage = error.error?.message || 'Failed to send reset code. Please try again.';
+            this.isLoading = false;
+          }
+        });
     } else {
       this.markFormGroupTouched();
     }
+  }
+
+  goToResetPassword(): void {
+    this.router.navigate(['/auth/reset-password'], { 
+      queryParams: { email: this.submittedEmail } 
+    });
   }
 
   navigateToLogin(): void {

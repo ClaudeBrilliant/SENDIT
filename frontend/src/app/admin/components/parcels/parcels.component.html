@@ -35,7 +35,7 @@
         <td>{{parcel.trackingNumber}}</td>
         <td>{{parcel.sender}}</td>
         <td>{{parcel.receiver}}</td>
-        <td><span class="status-badge" [ngClass]="parcel.status.toLowerCase()">{{parcel.status}}</span></td>
+        <td><span class="status-badge" [ngClass]="parcel.status?.toLowerCase() || 'pending'">{{parcel.status || 'PENDING'}}</span></td>
         <td>{{parcel.createdAt}}</td>
         <td>
           <div class="action-buttons">
@@ -101,7 +101,7 @@
         </div>
         <div class="detail-row">
           <span class="label">Status:</span>
-          <span class="value status-badge" [ngClass]="selectedParcel.status.toLowerCase()">{{ selectedParcel.status }}</span>
+          <span class="value status-badge" [ngClass]="selectedParcel.status.toLowerCase() || 'pending'">{{ selectedParcel.status || 'PENDING' }}</span>
         </div>
         <div class="detail-row">
           <span class="label">Created:</span>

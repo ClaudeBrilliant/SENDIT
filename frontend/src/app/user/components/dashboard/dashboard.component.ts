@@ -4,6 +4,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProfileComponent } from "../profile/profile.component";
+import { ReviewsComponent } from "../reviews/reviews.component";
 import { UserDashboardService } from '../../services/user-dashboard.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 
@@ -55,7 +56,7 @@ export interface DashboardState {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ProfileComponent],
+  imports: [CommonModule, ReactiveFormsModule, ProfileComponent, ReviewsComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -96,6 +97,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   ];
 
   showProfileModal = false;
+  showCommentModal = false;
+  selectedParcelForComment: Parcel | null = null;
 
   openProfileModal(): void {
     this.showProfileModal = true;
@@ -103,6 +106,22 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   closeProfileModal(): void {
     this.showProfileModal = false;
+  }
+
+  openCommentModal(parcel: Parcel): void {
+    this.selectedParcelForComment = parcel;
+    this.showCommentModal = true;
+  }
+
+  closeCommentModal(): void {
+    this.showCommentModal = false;
+    this.selectedParcelForComment = null;
+  }
+
+  hasUserReviewed(parcelId: string): boolean {
+    // This would check if the user has already reviewed this parcel
+    // For now, return false to show the comment button
+    return false;
   }
 
   constructor(
@@ -147,11 +166,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.dashboardService.getSentParcels(user.id).subscribe({
         next: (parcels: any) => {
           console.log('Sent parcels loaded:', parcels);
-          this.sentParcels = parcels;
+          this.sentParcels = parcels || [];
+          console.log('Delivered parcels in sent:', this.sentParcels.filter(p => p.status === 'DELIVERED'));
           this.loading = false;
         },
         error: (error) => {
           console.error('Error loading sent parcels:', error);
+          this.sentParcels = [];
           this.loading = false;
         }
       });
@@ -159,10 +180,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.dashboardService.getReceivedParcels(user.id).subscribe({
         next: (parcels: any) => {
           console.log('Received parcels loaded:', parcels);
-          this.receivedParcels = parcels;
+          this.receivedParcels = parcels || [];
+          console.log('Delivered parcels in received:', this.receivedParcels.filter(p => p.status === 'DELIVERED'));
         },
         error: (error) => {
           console.error('Error loading received parcels:', error);
+          this.receivedParcels = [];
         }
       });
     } else {
@@ -354,6 +377,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   goHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  goToReviews(): void {
+    this.router.navigate(['/user/reviews']);
   }
 
   getDashboardStats() {

@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { CourierModule } from './courier/courier.module';
 import { AuthModule } from './auth/auth.module';
 import { NotificationModule } from './notifications/notification.module';
+import { ContactModule } from './contact/contact.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { NotificationModule } from './notifications/notification.module';
     UsersModule, 
     CourierModule, 
     AuthModule, 
-    NotificationModule
+    NotificationModule,
+    ContactModule,
+    ReviewsModule
   ],
   controllers: [AppController],
   providers: [AppService],

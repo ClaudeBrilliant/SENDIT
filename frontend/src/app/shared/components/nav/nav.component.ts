@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthStateService, AuthState } from '../../services/auth-state.service';
+import { NotificationApiService, Notification } from '../../services/notification-api.service';
 
 @Component({
   selector: 'app-nav',
@@ -16,12 +17,24 @@ export class NavComponent implements OnInit, OnDestroy {
   isScrolled = false;
   isLoggedIn = false;
   userRole = '';
+  notifications: Notification[] = [];
+  unreadCount = 0;
+  showNotificationDropdown = false;
   private authSubscription?: Subscription;
 
   constructor(
     private router: Router,
-    private authStateService: AuthStateService
+    private authStateService: AuthStateService,
+    private notificationApiService: NotificationApiService
   ) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.notification-container')) {
+      this.showNotificationDropdown = false;
+    }
+  }
 
   ngOnInit(): void {
     // Subscribe to auth state changes
@@ -29,6 +42,14 @@ export class NavComponent implements OnInit, OnDestroy {
       (authState: AuthState) => {
         this.isLoggedIn = authState.isLoggedIn;
         this.userRole = authState.userRole;
+        
+        // Load notifications when user is logged in
+        if (this.isLoggedIn && authState.user?.id) {
+          this.loadNotifications(authState.user.id);
+        } else {
+          this.notifications = [];
+          this.unreadCount = 0;
+        }
       }
     );
 
@@ -42,6 +63,37 @@ export class NavComponent implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+  }
+
+  loadNotifications(userId: string): void {
+    this.notificationApiService.getUserNotifications(userId).subscribe({
+      next: (notifications) => {
+        // Only keep unread notifications in the list
+        this.notifications = notifications.filter(n => !n.isRead);
+        this.unreadCount = this.notifications.length;
+      },
+      error: (error) => {
+        console.error('Error loading notifications:', error);
+      }
+    });
+  }
+
+  toggleNotificationDropdown(event: Event): void {
+    event.stopPropagation();
+    this.showNotificationDropdown = !this.showNotificationDropdown;
+  }
+
+  markAsRead(notificationId: string): void {
+    this.notificationApiService.markAsRead(notificationId).subscribe({
+      next: (updatedNotification) => {
+        // Remove the notification from the local array when marked as read
+        this.notifications = this.notifications.filter(n => n.id !== notificationId);
+        this.unreadCount = this.notifications.filter(n => !n.isRead).length;
+      },
+      error: (error) => {
+        console.error('Error marking notification as read:', error);
+      }
+    });
   }
 
   logout(): void {

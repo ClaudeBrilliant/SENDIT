@@ -61,6 +61,40 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset code sent if email exists',
+    schema: {
+      example: {
+        message: 'If an account with this email exists, you will receive a password reset code.',
+      },
+    },
+  })
+  async forgotPassword(@Body() body: { email: string }) {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password with reset code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully',
+    schema: {
+      example: {
+        message: 'Password reset successfully. You can now log in with your new password.',
+      },
+    },
+  })
+  async resetPassword(@Body() body: { email: string; resetCode: string; newPassword: string }) {
+    return this.authService.resetPassword(body.email, body.resetCode, body.newPassword);
+  }
+
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@CurrentUser() user: CurrentUserData) {
@@ -73,10 +107,6 @@ export class AuthController {
     const token = authHeader?.substring(7); // Remove 'Bearer ' prefix
     return this.authService.refreshToken(token);
   }
-
-
-
-
 
   @Post('validate')
   @UseGuards(JwtAuthGuard)

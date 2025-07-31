@@ -52,12 +52,11 @@ export class NotificationsService {
     return this.prisma.notification.findUnique({ where: { id } });
   }
 
-  async updateNotification(id: string, data: { title?: string; message?: string; type?: string }) {
+  async updateNotification(id: string, data: { content?: string; type?: string }) {
     return this.prisma.notification.update({
       where: { id },
       data: {
-        ...(data.title && { title: data.title }),
-        ...(data.message && { message: data.message }),
+        ...(data.content && { content: data.content }),
         ...(data.type && { type: data.type as NotificationType }),
       },
     });

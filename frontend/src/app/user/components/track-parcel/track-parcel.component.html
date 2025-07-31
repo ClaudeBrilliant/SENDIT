@@ -120,11 +120,11 @@
         <h4>Parcel Information</h4>
         <div class="info-row">
           <span class="label">Sender:</span>
-          <span class="value">{{ parcelDetails.sender }}</span>
+          <span class="value">{{ parcelDetails.sender?.name }}</span>
         </div>
         <div class="info-row">
           <span class="label">Receiver:</span>
-          <span class="value">{{ parcelDetails.receiver }}</span>
+          <span class="value">{{ parcelDetails.receiver?.name }}</span>
         </div>
         <div class="info-row">
           <span class="label">Weight:</span>
@@ -136,7 +136,7 @@
         </div>
         <div class="info-row" *ngIf="parcelDetails.courier">
           <span class="label">Courier:</span>
-          <span class="value">{{ parcelDetails.courier }}</span>
+          <span class="value">{{ parcelDetails.courier?.name }}</span>
         </div>
       </div>
 

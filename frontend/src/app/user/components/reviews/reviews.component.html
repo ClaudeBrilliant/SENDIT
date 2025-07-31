@@ -1,0 +1,163 @@
+<div class="reviews-container">
+  <!-- Show parcel-specific header if parcelId is provided -->
+  <div class="reviews-header" *ngIf="parcelId">
+    <h1>Review This Delivery</h1>
+    <p *ngIf="selectedParcel">Share your experience with parcel #{{selectedParcel.trackingNumber}}</p>
+  </div>
+
+  <!-- Show general header if no parcelId -->
+  <div class="reviews-header" *ngIf="!parcelId">
+    <h1>Reviews & Feedback</h1>
+    <p>Share your experience with SendIT delivery services</p>
+  </div>
+
+  <!-- Overall Rating Section - Only show if not parcel-specific -->
+  <div class="overall-rating-section" *ngIf="!parcelId">
+    <div class="rating-summary">
+      <div class="average-rating">
+        <h2>{{ getAverageRating() }}</h2>
+        <div class="stars">
+          <span *ngFor="let star of [1,2,3,4,5]" 
+                class="star" 
+                [ngClass]="getStarClass(getAverageRating(), star)">
+            ★
+          </span>
+        </div>
+        <p>{{ reviews.length }} reviews</p>
+      </div>
+      <div class="rating-breakdown">
+        <div class="rating-bar" *ngFor="let rating of [5,4,3,2,1]">
+          <span class="rating-label">{{ rating }}★</span>
+          <div class="bar-container">
+            <div class="bar-fill" [style.width.%]="getRatingPercentage(rating)"></div>
+          </div>
+          <span class="rating-count">{{ getRatingCount(rating) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Review Section -->
+  <div class="submit-review-section">
+    <h2 *ngIf="!parcelId">Write a Review</h2>
+    <h2 *ngIf="parcelId">Your Review</h2>
+    <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()" class="review-form">
+      <div class="form-group" *ngIf="!parcelId">
+        <label for="parcelId">Select Parcel to Review</label>
+        <select id="parcelId" formControlName="parcelId" class="form-select">
+          <option value="">Choose a delivered parcel...</option>
+          <option *ngFor="let parcel of availableParcels" [value]="parcel.id">
+            #{{ parcel.id }} - {{ parcel.pickupAddress }} to {{ parcel.deliveryAddress }}
+          </option>
+        </select>
+        <div class="error-message" *ngIf="getErrorMessage('parcelId')">
+          {{ getErrorMessage('parcelId') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Rating</label>
+        <div class="rating-input">
+          <span *ngFor="let star of [1,2,3,4,5]; let i = index" 
+                class="star-input" 
+                [ngClass]="getStarClass(reviewForm.get('rating')?.value || 0, star)"
+                (click)="reviewForm.patchValue({rating: star})">
+            ★
+          </span>
+        </div>
+        <div class="error-message" *ngIf="getErrorMessage('rating')">
+          {{ getErrorMessage('rating') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="comment">Your Review</label>
+        <textarea id="comment" 
+                  formControlName="comment" 
+                  class="form-textarea" 
+                  placeholder="Share your experience with this delivery..."
+                  rows="4"></textarea>
+        <div class="error-message" *ngIf="getErrorMessage('comment')">
+          {{ getErrorMessage('comment') }}
+        </div>
+        <div class="char-count">
+          {{ reviewForm.get('comment')?.value?.length || 0 }}/500 characters
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" 
+                class="btn btn-primary" 
+                [disabled]="submitting || !reviewForm.valid">
+          <span *ngIf="!submitting">Submit Review</span>
+          <span *ngIf="submitting">Submitting...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Success/Error Messages -->
+    <div class="success-message" *ngIf="successMessage">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ successMessage }}
+    </div>
+
+    <div class="error-message" *ngIf="error">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- All Reviews Section - Only show if not parcel-specific -->
+  <div class="all-reviews-section" *ngIf="!parcelId">
+    <h2>All Reviews</h2>
+    
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading reviews...</p>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-list" *ngIf="!loading">
+      <div class="review-card" *ngFor="let review of reviews">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">
+              {{ review.userName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="reviewer-details">
+              <h4>{{ review.userName }}</h4>
+              <p class="review-date">{{ formatDate(review.createdAt) }}</p>
+            </div>
+          </div>
+          <div class="review-rating">
+            <div class="stars">
+              <span *ngFor="let star of [1,2,3,4,5]" 
+                    class="star" 
+                    [ngClass]="getStarClass(review.rating, star)">
+                ★
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="review-content">
+          <p class="review-comment">{{ review.comment }}</p>
+          <p class="parcel-info">Parcel: #{{ review.parcelTrackingNumber }}</p>
+        </div>
+      </div>
+
+      <!-- No Reviews State -->
+      <div class="no-reviews" *ngIf="reviews.length === 0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <h3>No reviews yet</h3>
+        <p>Be the first to share your experience!</p>
+      </div>
+    </div>
+  </div>
+</div> 
